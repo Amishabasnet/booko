@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:booko/screens/dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -15,6 +18,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final confirmPasswordController = TextEditingController();
 
   String? selectedGender;
+
+  bool passwordVisible = false;
+  bool confirmPasswordVisible = false;
 
   // Error flags
   bool nameError = false;
@@ -85,10 +91,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
         confirmPasswordError = true;
         confirmPasswordMsg = "Passwords do not match.";
       }
+
+      // If all validations pass, navigate to Dashboard
+      if (!nameError &&
+          !emailError &&
+          !mobileError &&
+          !dobError &&
+          !genderError &&
+          !passwordError &&
+          !confirmPasswordError) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
     });
   }
 
-  // Date Picker Function
   Future<void> pickDOB() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -110,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(6),
       borderSide: BorderSide(
-        color: error ? Colors.red : Color(0xffD1D1D6),
+        color: error ? Colors.red : const Color(0xffD1D1D6),
         width: 1,
       ),
     );
@@ -127,34 +146,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-
               Row(
-                children: [
-                  Icon(Icons.arrow_back, size: 26, color: Colors.black87),
-                  const SizedBox(width: 10),
+                children: const [
+                  BackButton(color: Colors.black87),
+                  SizedBox(width: 10),
                   Text(
                     "Booko",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-
               const SizedBox(height: 30),
-
-              Text(
+              const Text(
                 "Create an Account",
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              Text(
+              const Text(
                 "Fill in your details or register.",
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
-
               const SizedBox(height: 30),
 
               // NAME
-              Text("Name", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text("Name", style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
                 controller: nameController,
@@ -166,15 +181,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               if (nameError)
-                Text(
+                const Text(
                   "Required.",
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
               // EMAIL
-              Text(
+              const Text(
                 "Email Address",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
@@ -191,13 +205,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (emailError)
                 Text(
                   emailErrorMsg,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
               // MOBILE
-              Text("Mobile", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Mobile",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 6),
               TextField(
                 controller: mobileController,
@@ -212,13 +228,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (mobileError)
                 Text(
                   mobileErrorMsg,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
               // DOB
-              Text(
+              const Text(
                 "Date of Birth",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
@@ -229,34 +244,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onTap: pickDOB,
                 decoration: InputDecoration(
                   hintText: "DD/MM/YYYY",
-                  suffixIcon: Icon(Icons.calendar_today),
+                  suffixIcon: const Icon(Icons.calendar_today),
                   border: inputBorder(dobError),
                   enabledBorder: inputBorder(dobError),
                   focusedBorder: inputBorder(dobError),
                 ),
               ),
               if (dobError)
-                Text(
+                const Text(
                   "Please select your birth date.",
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
-              // GENDER DROPDOWN
-              Text("Gender", style: TextStyle(fontWeight: FontWeight.w600)),
+              // GENDER
+              const Text(
+                "Gender",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 6),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: genderError ? Colors.red : Color(0xffD1D1D6),
+                    color: genderError ? Colors.red : const Color(0xffD1D1D6),
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    hint: Text("Select Gender"),
+                    hint: const Text("Select Gender"),
                     value: selectedGender,
                     items: ["Male", "Female", "Other"]
                         .map((g) => DropdownMenuItem(value: g, child: Text(g)))
@@ -271,21 +288,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               if (genderError)
-                Text(
+                const Text(
                   "Please select gender.",
                   style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
               // PASSWORD
-              Text("Password", style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                "Password",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 6),
               TextField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: !passwordVisible,
                 decoration: InputDecoration(
                   hintText: "Password",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      passwordVisible ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        passwordVisible = !passwordVisible;
+                      });
+                    },
+                  ),
                   border: inputBorder(passwordError),
                   enabledBorder: inputBorder(passwordError),
                   focusedBorder: inputBorder(passwordError),
@@ -294,22 +323,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (passwordError)
                 Text(
                   passwordErrorMsg,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 20),
 
               // CONFIRM PASSWORD
-              Text(
+              const Text(
                 "Confirm Password",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: confirmPasswordController,
-                obscureText: true,
+                obscureText: !confirmPasswordVisible,
                 decoration: InputDecoration(
                   hintText: "Confirm Password",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      confirmPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        confirmPasswordVisible = !confirmPasswordVisible;
+                      });
+                    },
+                  ),
                   border: inputBorder(confirmPasswordError),
                   enabledBorder: inputBorder(confirmPasswordError),
                   focusedBorder: inputBorder(confirmPasswordError),
@@ -318,9 +358,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               if (confirmPasswordError)
                 Text(
                   confirmPasswordMsg,
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
               const SizedBox(height: 30),
 
               // SIGN UP BUTTON
@@ -329,38 +368,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff003366),
-                    shape: StadiumBorder(),
+                    backgroundColor: const Color(0xff003366),
+                    shape: const StadiumBorder(),
                   ),
                   onPressed: validateForm,
-                  child: Text(
+                  child: const Text(
                     "Sign Up",
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Have an account?", style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 4),
-                    Text(
-                      "Sign In",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 40),
             ],
           ),
         ),
