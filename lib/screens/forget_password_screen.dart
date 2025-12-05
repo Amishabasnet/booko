@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:booko/screens/otp_screen.dart';
+import 'package:flutter/material.dart';
 
 class ForgetPasswordScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();

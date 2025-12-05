@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:booko/screens/register_screen.dart';
 import 'package:booko/screens/forget_password_screen.dart';
+import 'package:booko/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -13,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool emailError = false;
   bool passwordError = false;
+  bool passwordVisible = false;
 
   String emailErrorMsg = "";
   String passwordErrorMsg = "";
@@ -36,6 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
         passwordError = true;
         passwordErrorMsg = "Incorrect Password.";
       }
+
+      // Navigate to Dashboard if no errors
+      if (!emailError && !passwordError) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
     });
   }
 
@@ -50,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 "Booko",
                 style: TextStyle(
                   fontSize: 20,
@@ -58,26 +70,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: Colors.black87,
                 ),
               ),
-
-              SizedBox(height: 40),
-
-              Text(
+              const SizedBox(height: 40),
+              const Text(
                 "Welcome Back",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              Text(
+              const Text(
                 "Welcome back, you have been missed.",
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 30),
 
               // Email label
-              Text(
+              const Text(
                 "Email Address",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
-
               const SizedBox(height: 6),
 
               // Email TextField
@@ -106,27 +115,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     emailErrorMsg,
-                    style: TextStyle(color: Colors.red, fontSize: 12),
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
 
               const SizedBox(height: 20),
 
               // Password label
-              Text(
+              const Text(
                 "Password",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
-
               const SizedBox(height: 6),
 
               // Password TextField
               TextField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: !passwordVisible,
                 decoration: InputDecoration(
                   hintText: "Enter Password",
-                  suffixIcon: Icon(Icons.visibility_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      passwordVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        passwordVisible = !passwordVisible;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -148,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     passwordErrorMsg,
-                    style: TextStyle(color: Colors.red, fontSize: 12),
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
 
@@ -164,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (_) => ForgetPasswordScreen()),
                     );
                   },
-                  child: Text(
+                  child: const Text(
                     "Forget Password?",
                     style: TextStyle(
                       color: Colors.red,
@@ -183,11 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    shape: StadiumBorder(),
-                    backgroundColor: Color(0xff003366),
+                    shape: const StadiumBorder(),
+                    backgroundColor: const Color(0xff003366),
                   ),
                   onPressed: validate,
-                  child: Text(
+                  child: const Text(
                     "Sign In",
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
@@ -201,11 +219,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       "Don't have an account?",
                       style: TextStyle(fontSize: 14, color: Colors.black87),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -213,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           MaterialPageRoute(builder: (_) => RegisterScreen()),
                         );
                       },
-                      child: Text(
+                      child: const Text(
                         "Sign Up",
                         style: TextStyle(
                           color: Colors.blue,
