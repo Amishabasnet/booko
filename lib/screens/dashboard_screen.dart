@@ -6,31 +6,31 @@ class DashboardScreen extends StatelessWidget {
   final List<Map<String, String>> nowShowing = const [
     {
       'title': 'Predator:Badlands',
-      'image': 'assets/images/predator-badlands.jpg',
+      'image': 'assets/icons/images/predator-badlands.jpg',
       'language': 'English',
       'duration': '1h 45m',
     },
     {
       'title': 'Paran',
-      'image': 'assets/images/paran.jpg',
+      'image': 'assets/icons/images/paran.jpg',
       'language': 'Nepali',
       'duration': '1h 50m',
     },
     {
       'title': 'Man Binako Dhan',
-      'image': 'assets/images/manbinakodhan.jpg',
+      'image': 'assets/icons/images/manbinakodhan.jpg',
       'language': 'Nepali',
       'duration': '2h 5m',
     },
     {
       'title': 'The Running Man',
-      'image': 'assets/images/runningman.jpg',
+      'image': 'assets/icons/images/runningman.jpg',
       'language': 'English',
       'duration': '2h 0m',
     },
     {
       'title': 'Wicked: For Good',
-      'image': 'assets/images/wicked.jpg',
+      'image': 'assets/icons/images/wicked.jpg',
       'language': 'English',
       'duration': '1h 55m',
     },

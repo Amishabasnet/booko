@@ -1,3 +1,4 @@
+import 'package:booko/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:booko/screens/dashboard_screen.dart';
 
@@ -102,7 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           !confirmPasswordError) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       }
     });

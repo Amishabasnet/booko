@@ -1,3 +1,4 @@
+import 'package:booko/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:booko/screens/login_screen.dart';
 
@@ -6,6 +7,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: LoginScreen());
+    return MaterialApp(home: SplashScreen());
   }
 }
