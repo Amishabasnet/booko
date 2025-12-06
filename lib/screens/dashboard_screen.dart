@@ -6,31 +6,31 @@ class DashboardScreen extends StatelessWidget {
   final List<Map<String, String>> nowShowing = const [
     {
       'title': 'Predator:Badlands',
-      'image': 'assets/icons/images/predator-badlands.jpg',
+      'image': 'assets/images/predator-badlands.jpg',
       'language': 'English',
       'duration': '1h 45m',
     },
     {
       'title': 'Paran',
-      'image': 'assets/icons/images/paran.jpg',
+      'image': 'assets/images/paran.jpg',
       'language': 'Nepali',
       'duration': '1h 50m',
     },
     {
       'title': 'Man Binako Dhan',
-      'image': 'assets/icons/images/manbinakodhan.jpg',
+      'image': 'assets/images/manbinakodhan.jpg',
       'language': 'Nepali',
       'duration': '2h 5m',
     },
     {
       'title': 'The Running Man',
-      'image': 'assets/icons/images/runningman.jpg',
+      'image': 'assets/images/runningman.jpg',
       'language': 'English',
       'duration': '2h 0m',
     },
     {
       'title': 'Wicked: For Good',
-      'image': 'assets/icons/images/wicked.jpg',
+      'image': 'assets/images/wicked.jpg',
       'language': 'English',
       'duration': '1h 55m',
     },
@@ -42,9 +42,16 @@ class DashboardScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Booko'),
+          title: const Text(
+            'Booko',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Colors.indigo[900],
+          iconTheme: const IconThemeData(color: Colors.white),
           bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white,
+            indicatorColor: Colors.white,
             tabs: [
               Tab(text: 'NOW SHOWING'),
               Tab(text: 'COMING SOON'),
@@ -71,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
                       Expanded(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: Image.asset(
                             movie['image']!,
                             fit: BoxFit.cover,
                             width: double.infinity,
@@ -102,17 +109,24 @@ class DashboardScreen extends StatelessWidget {
                 },
               ),
             ),
-            const Center(child: Text('Coming Soon Movies here')),
+            const Center(
+              child: Text(
+                'Coming Soon Movies here',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.indigo[900],
+          selectedItemColor: const Color(0xff003366),
+          unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(icon: Icon(Icons.tag), label: 'Offers'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
-          selectedItemColor: Colors.indigo[900],
         ),
       ),
     );

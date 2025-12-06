@@ -23,26 +23,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void validate() {
     setState(() {
-      emailError = false;
-      passwordError = false;
-      emailErrorMsg = "";
-      passwordErrorMsg = "";
+      // emailError = false;
+      // passwordError = false;
+      // emailErrorMsg = "";
+      // passwordErrorMsg = "";
 
       String email = emailController.text.trim();
       String pass = passwordController.text.trim();
 
-      if (email != "example@gmail.com") {
-        emailError = true;
-        emailErrorMsg = "No account found with this email. Please sign up.";
-      }
+      // if (email != "example@gmail.com") {
+      //   emailError = true;
+      //   emailErrorMsg = "No account found with this email. Please sign up.";
+      // }
 
-      if (pass != "123456") {
-        passwordError = true;
-        passwordErrorMsg = "Incorrect Password.";
-      }
+      // if (pass != "123456") {
+      //   passwordError = true;
+      //   passwordErrorMsg = "Incorrect Password.";
+      // }
 
-      // Navigate to Dashboard if no errors
-      if (!emailError && !passwordError) {
+      // // Navigate to Dashboard if no errors
+      // if (!emailError && !passwordError) {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      //   );
+      // }
+      if (email == "amishabasnet@gmail.com" && pass == "987456") {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -82,14 +88,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Email label
               const Text(
                 "Email Address",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
 
-              // Email TextField
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -121,14 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              // Password label
               const Text(
                 "Password",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
 
-              // Password TextField
               TextField(
                 controller: passwordController,
                 obscureText: !passwordVisible,
@@ -172,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 6),
 
-              // Forget Password Button
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -195,7 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 25),
 
-              // Sign In button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -214,7 +214,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              // Sign Up Navigation
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

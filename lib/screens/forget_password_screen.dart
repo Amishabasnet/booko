@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 class ForgetPasswordScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
 
+  ForgetPasswordScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,7 +18,6 @@ class ForgetPasswordScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
 
-              // Back + Booko
               Row(
                 children: [
                   GestureDetector(
@@ -65,7 +66,6 @@ class ForgetPasswordScreen extends StatelessWidget {
 
               SizedBox(height: 30),
 
-              // Continue button
               SizedBox(
                 width: double.infinity,
                 height: 48,

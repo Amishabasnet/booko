@@ -1,9 +1,10 @@
-import 'package:booko/screens/login_screen.dart';
 import 'package:booko/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -30,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/icons/images/movie_ticket.png',
+              'assets/images/movie_ticket.png',
               width: 240,
               height: 120,
             ),

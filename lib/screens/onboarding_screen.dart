@@ -15,17 +15,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> pages = [
     {
-      "image": "assets/icons/images/onboarding2.jpg",
+      "image": "assets/images/onboarding2.jpg",
       "title": "Welcome to BOOKO",
       "subtitle": "Your smart movie ticketing partner!",
     },
     {
-      "image": "assets/icons/images/onboarding1.jpg",
+      "image": "assets/images/onboarding1.jpg",
       "title": "Book Your Favorite Movies",
       "subtitle": "Choose movies, pick seats and pay instantly.",
     },
     {
-      "image": "assets/icons/images/onboarding3.jpg",
+      "image": "assets/images/onboarding3.jpg",
       "title": "Fast & Easy Experience",
       "subtitle": "Enjoy a seamless movie booking journey.",
     },
@@ -75,7 +75,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
 
-          //Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
