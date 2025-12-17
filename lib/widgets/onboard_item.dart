@@ -34,7 +34,7 @@ class OnboardItem extends StatelessWidget {
             subtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16, color: Colors.black54),
-          ),
+          ), 
         ],
       ),
     );
