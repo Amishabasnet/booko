@@ -42,9 +42,16 @@ class DashboardScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Booko'),
+          title: const Text(
+            'Booko',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Colors.indigo[900],
+          iconTheme: const IconThemeData(color: Colors.white),
           bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white,
+            indicatorColor: Colors.white,
             tabs: [
               Tab(text: 'NOW SHOWING'),
               Tab(text: 'COMING SOON'),
@@ -71,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
                       Expanded(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
+                          child: Image.asset(
                             movie['image']!,
                             fit: BoxFit.cover,
                             width: double.infinity,
@@ -102,17 +109,24 @@ class DashboardScreen extends StatelessWidget {
                 },
               ),
             ),
-            const Center(child: Text('Coming Soon Movies here')),
+            const Center(
+              child: Text(
+                'Coming Soon Movies here',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.indigo[900],
+          selectedItemColor: const Color(0xff003366),
+          unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(icon: Icon(Icons.tag), label: 'Offers'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
-          selectedItemColor: Colors.indigo[900],
         ),
       ),
     );

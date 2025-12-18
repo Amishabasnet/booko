@@ -1,8 +1,10 @@
-import 'package:booko/screens/login_screen.dart';
+import 'package:booko/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -11,11 +13,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to HomeScreen after 3 seconds
-    Timer(Duration(seconds: 3), () {
+    // Navigate to HomeScreen after 4 seconds
+    Timer(Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => OnboardingScreen()),
       );
     });
   }
@@ -23,29 +25,28 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Cinematic dark background
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App logo or movie ticket icon
             Image.asset(
-              'assets/booko-logo.jpg', // Replace with your ticket/logo image
-              width: 120,
+              'assets/images/movie_ticket.png',
+              width: 240,
               height: 120,
             ),
             SizedBox(height: 20),
             // App name
-            Text(
-              'Booko',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: Colors.orangeAccent, // Vibrant color for cinema feel
-              ),
-            ),
+            // Text(
+            //   'Booko',
+            //   style: TextStyle(
+            //     fontSize: 24,
+            //     fontWeight: FontWeight.bold,
+            //     color: Colors.orangeAccent,
+            //   ),
+            // ),
             SizedBox(height: 10),
-            // Optional tagline
+
             Text(
               'Your ultimate movie ticketing app',
               style: TextStyle(fontSize: 16, color: Colors.white70),
