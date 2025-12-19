@@ -1,5 +1,5 @@
 import 'package:booko/screens/splash_screen.dart';
-import 'package:booko/theme/theme_data.dart';
+import 'package:booko/screens/theme/theme_data.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
