@@ -5,13 +5,6 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Search Screen',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-    );
+    return Scaffold(appBar: AppBar(title: const Text('Search Screen')));
   }
 }

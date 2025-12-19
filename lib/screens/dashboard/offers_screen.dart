@@ -5,13 +5,6 @@ class OffersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Offers Screen',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-    );
+    return Scaffold(appBar: AppBar(title: const Text('Offers Screen')));
   }
 }

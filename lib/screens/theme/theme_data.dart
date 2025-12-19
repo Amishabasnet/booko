@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 
 ThemeData getApplicationTheme() {
   return ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
     useMaterial3: true,
     fontFamily: 'Open Sans Regular',
+
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xff003366),
+      primary: const Color(0xff003366),
+    ),
+
+    scaffoldBackgroundColor: Colors.white,
+
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.amber,
+      backgroundColor: Color(0xff003366),
       elevation: 3,
+      centerTitle: false,
+      iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -16,27 +25,19 @@ ThemeData getApplicationTheme() {
       ),
     ),
 
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.grey.shade200,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xff003366), width: 2),
-      ),
-      labelStyle: const TextStyle(
-        fontSize: 14,
+    tabBarTheme: const TabBarThemeData(
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white70,
+      indicatorColor: Colors.white,
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelStyle: TextStyle(
+        fontWeight: FontWeight.w600,
         fontFamily: 'Open Sans Regular',
       ),
-      hintStyle: const TextStyle(fontSize: 14, color: Colors.black45),
+      unselectedLabelStyle: TextStyle(
+        fontWeight: FontWeight.w500,
+        fontFamily: 'Open Sans Regular',
+      ),
     ),
 
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -51,14 +52,14 @@ ThemeData getApplicationTheme() {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xff003366),
+        foregroundColor: Colors.white,
         textStyle: const TextStyle(
           fontSize: 18,
-          color: Colors.white,
           fontWeight: FontWeight.w500,
           fontFamily: 'Open Sans Regular',
         ),
-        backgroundColor: const Color(0xff003366),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
     ),
   );
