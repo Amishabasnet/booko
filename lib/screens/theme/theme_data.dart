@@ -6,8 +6,8 @@ ThemeData getApplicationTheme() {
     fontFamily: 'Open Sans Regular',
 
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xff003366),
-      primary: const Color(0xff003366),
+      seedColor: Color(0xff003366),
+      primary: Color(0xff003366),
     ),
 
     scaffoldBackgroundColor: Colors.white,
@@ -52,7 +52,7 @@ ThemeData getApplicationTheme() {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xff003366),
+        backgroundColor: Color(0xff003366),
         foregroundColor: Colors.white,
         textStyle: const TextStyle(
           fontSize: 18,
