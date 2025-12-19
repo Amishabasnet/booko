@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:booko/screens/register_screen.dart';
 import 'package:booko/screens/forget_password_screen.dart';
-import 'package:booko/screens/dashboard_screen.dart';
+import 'package:booko/bottomNavScreen/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

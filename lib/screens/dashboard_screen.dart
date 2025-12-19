@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
-
   final List<Map<String, String>> nowShowing = const [
     {
       'title': 'Predator:Badlands',
@@ -35,7 +34,6 @@ class DashboardScreen extends StatelessWidget {
       'duration': '1h 55m',
     },
   ];
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -97,7 +95,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       Center(
                         child: Text(
-                          '${movie['language']}   |  ${movie['duration']}',
+                          '${movie['language']} | ${movie['duration']}',
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.black,
