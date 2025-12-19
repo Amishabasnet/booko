@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:booko/widgets/movie_list_item.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
