@@ -1,4 +1,4 @@
-import 'package:booko/screens/onboarding_screen.dart';
+import 'package:booko/features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 

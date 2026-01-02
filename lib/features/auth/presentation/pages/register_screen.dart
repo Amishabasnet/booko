@@ -1,4 +1,4 @@
-import 'package:booko/screens/login_screen.dart';
+import 'package:booko/features/auth/presentation/pages/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
