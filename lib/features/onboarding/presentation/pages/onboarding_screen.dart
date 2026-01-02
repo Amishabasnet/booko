@@ -1,5 +1,5 @@
-import 'package:booko/screens/login_screen.dart';
-import 'package:booko/widgets/onboard_item.dart';
+import 'package:booko/features/auth/presentation/pages/login_screen.dart';
+import 'package:booko/features/onboarding/domain/entities/onboard_item.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen extends StatefulWidget {

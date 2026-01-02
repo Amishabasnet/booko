@@ -1,7 +1,7 @@
-import 'package:booko/screens/dashboard_screen.dart';
+import 'package:booko/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:booko/screens/register_screen.dart';
-import 'package:booko/screens/forget_password_screen.dart';
+import 'package:booko/features/auth/presentation/pages/register_screen.dart';
+// import 'package:booko/screens/forget_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -174,26 +174,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 6),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ForgetPasswordScreen()),
-                    );
-                  },
-                  child: const Text(
-                    "Forget Password?",
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
+              // Align(
+              //   alignment: Alignment.centerRight,
+              //   child: GestureDetector(
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              // MaterialPageRoute(builder: (_) => ForgetPasswordScreen()),
+              //       );
+              //     },
+              //     child: const Text(
+              //       "Forget Password?",
+              //       style: TextStyle(
+              //         color: Colors.red,
+              //         fontSize: 13,
+              //         fontWeight: FontWeight.w500,
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 25),
 
               SizedBox(
