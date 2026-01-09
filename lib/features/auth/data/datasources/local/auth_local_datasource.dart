@@ -10,42 +10,29 @@ final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
 });
 
 class AuthLocalDatasource implements IAuthDatasource {
-  final HiveService _hiveService;
+  final AuthHiveService _hiveService;
 
-  AuthLocalDatasource({required HiveService hiveService})
+  AuthLocalDatasource({required AuthHiveService hiveService})
     : _hiveService = hiveService;
 
   @override
   Future<AuthHiveModel> login(String email, String password) async {
-    try {
-      final user = _hiveService.loginUser(email, password);
-      if (user != null) {
-        return user;
-      } else {
-        throw Exception('Invalid email or password');
-      }
-    } catch (e) {
-      throw Exception('Login failed: $e');
+    final user = await _hiveService.loginUser(email, password);
+    if (user != null) {
+      return user;
     }
+    throw Exception('Invalid email or password');
   }
 
   @override
   Future<bool> logout() async {
-    try {
-      await _hiveService.logoutUser();
-      return true;
-    } catch (_) {
-      return false;
-    }
+    await _hiveService.logoutUser();
+    return true;
   }
 
   @override
   Future<bool> register(AuthHiveModel model) async {
-    try {
-      await _hiveService.registerUser(model);
-      return true;
-    } catch (_) {
-      return false;
-    }
+    await _hiveService.registerUser(model);
+    return true;
   }
 }
