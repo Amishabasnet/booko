@@ -1,15 +1,18 @@
 import 'package:booko/features/auth/presentation/pages/login_screen.dart';
+import 'package:booko/features/auth/presentation/state/auth_state.dart';
+import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final nameController = TextEditingController();
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final fullNameController = TextEditingController();
   final emailController = TextEditingController();
   final mobileController = TextEditingController();
   final dobController = TextEditingController();
@@ -21,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool passwordVisible = false;
   bool confirmPasswordVisible = false;
 
-  bool nameError = false;
+  bool fullNameError = false;
   bool emailError = false;
   bool mobileError = false;
   bool dobError = false;
@@ -36,21 +39,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void validateForm() {
     setState(() {
-      nameError = emailError = mobileError = dobError = genderError =
+      fullNameError = emailError = mobileError = dobError = genderError =
           passwordError = confirmPasswordError = false;
 
       emailErrorMsg = mobileErrorMsg = passwordErrorMsg = confirmPasswordMsg =
           "";
 
-      String name = nameController.text.trim();
+      String fullName = fullNameController.text.trim();
       String email = emailController.text.trim();
       String mobile = mobileController.text.trim();
       String dob = dobController.text.trim();
       String pass = passwordController.text.trim();
       String confirmPass = confirmPasswordController.text.trim();
 
-      if (name.isEmpty) {
-        nameError = true;
+      if (fullName.isEmpty) {
+        fullNameError = true;
       }
 
       if (!email.contains("@")) {
@@ -81,7 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         confirmPasswordMsg = "Passwords do not match.";
       }
 
-      if (!nameError &&
+      if (!fullNameError &&
           !emailError &&
           !mobileError &&
           !dobError &&
@@ -113,6 +116,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> signUp() async {
+    validateForm();
+
+    if (fullNameError ||
+        emailError ||
+        mobileError ||
+        dobError ||
+        genderError ||
+        passwordError ||
+        confirmPasswordError) {
+      return;
+    }
+
+    await ref
+        .read(authViewmodelProvider.notifier)
+        .register(
+          fullName: fullNameController.text.trim(),
+          email: emailController.text.trim(),
+          phoneNumber: mobileController.text.trim(),
+          dob: dobController.text.trim(),
+          gender: selectedGender!,
+          password: passwordController.text.trim(),
+          username: '',
+        );
+  }
+
   InputBorder inputBorder(bool error) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(6),
@@ -125,6 +154,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewmodelProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -159,15 +190,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const Text("Name", style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
-                controller: nameController,
+                controller: fullNameController,
                 decoration: InputDecoration(
                   hintText: "Please enter your full name.",
-                  border: inputBorder(nameError),
-                  enabledBorder: inputBorder(nameError),
-                  focusedBorder: inputBorder(nameError),
+                  border: inputBorder(fullNameError),
+                  enabledBorder: inputBorder(fullNameError),
+                  focusedBorder: inputBorder(fullNameError),
                 ),
               ),
-              if (nameError)
+              if (fullNameError)
                 const Text(
                   "Required.",
                   style: TextStyle(color: Colors.red, fontSize: 12),

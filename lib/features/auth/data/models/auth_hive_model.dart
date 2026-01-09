@@ -20,8 +20,6 @@ class AuthHiveModel extends HiveObject {
   @HiveField(5)
   final String gender;
   @HiveField(6)
-  final String username;
-  @HiveField(7)
   final String? password;
 
   AuthHiveModel({
@@ -31,7 +29,6 @@ class AuthHiveModel extends HiveObject {
     this.phoneNumber,
     required this.dob,
     required this.gender,
-    required this.username,
     this.password,
   }) : authId = authId ?? Uuid().v4();
 
@@ -44,7 +41,6 @@ class AuthHiveModel extends HiveObject {
       phoneNumber: entity.phoneNumber,
       dob: entity.dob,
       gender: entity.gender,
-      username: entity.username,
       password: entity.password,
     );
   }
@@ -57,7 +53,6 @@ class AuthHiveModel extends HiveObject {
       phoneNumber: phoneNumber,
       dob: dob,
       gender: gender,
-      username: username,
       password: password,
     );
   }
