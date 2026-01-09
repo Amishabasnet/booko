@@ -3,7 +3,6 @@ import 'package:booko/features/auth/data/models/auth_hive_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Provider
 final hiveServiceProvider = Provider<AuthHiveService>((ref) {
@@ -12,14 +11,21 @@ final hiveServiceProvider = Provider<AuthHiveService>((ref) {
 
 class AuthHiveService {
   Box<AuthHiveModel>? _authBox;
+  Box<String>? _sessionBox;
+
+  static const String sessionBoxName = 'sessionBox';
+  static const String currentUserKey = 'current_user';
 
   /// Initialize Hive and open boxes
-  Future<void> init() async {
+  Future<void> init({bool insertDummy = true}) async {
     await Hive.initFlutter();
 
     _registerAdapters();
     await _openBoxes();
-    await insertDummyUsers();
+
+    if (insertDummy) {
+      await insertDummyUsers();
+    }
   }
 
   /// Register Hive adapters
@@ -32,6 +38,8 @@ class AuthHiveService {
   /// Open Hive boxes
   Future<void> _openBoxes() async {
     _authBox ??= await Hive.openBox<AuthHiveModel>(HiveTableConstant.authTable);
+
+    _sessionBox ??= await Hive.openBox<String>(sessionBoxName);
   }
 
   /// Get Auth box safely
@@ -42,9 +50,17 @@ class AuthHiveService {
     return _authBox!;
   }
 
-  // ==================== CRUD Operations ====================
+  /// Get Session box safely
+  Box<String> get sessionBox {
+    if (_sessionBox == null || !_sessionBox!.isOpen) {
+      throw Exception('Session box not initialized. Call init() first.');
+    }
+    return _sessionBox!;
+  }
 
-  /// Add user (register)
+  // ==================== AUTH OPERATIONS ====================
+
+  /// Register user
   Future<AuthHiveModel> registerUser(AuthHiveModel user) async {
     await authBox.put(user.username, user);
     return user;
@@ -52,29 +68,39 @@ class AuthHiveService {
 
   /// Login user
   Future<AuthHiveModel?> loginUser(String email, String password) async {
-    final matches = authBox.values.where(
-      (u) => u.email == email && u.password == password,
-    );
-    if (matches.isNotEmpty) return matches.first;
-    return null;
+    try {
+      final user = authBox.values.firstWhere(
+        (u) => u.email == email && u.password == password,
+      );
+
+      // Save session
+      await sessionBox.put(currentUserKey, user.username);
+      return user;
+    } catch (_) {
+      return null;
+    }
   }
 
-  /// Logout user
-  Future<void> logoutUser(String username) async {
-    await authBox.delete(username);
+  /// Logout user (clear session only)
+  Future<void> logoutUser() async {
+    await sessionBox.delete(currentUserKey);
   }
 
-  /// Get all users
-  List<AuthHiveModel> getAllUsers() {
-    return authBox.values.toList();
+  /// Get current logged-in user
+  AuthHiveModel? getCurrentUser() {
+    final username = sessionBox.get(currentUserKey);
+    if (username == null) return null;
+    return authBox.get(username);
   }
 
-  /// Get user by username
+  // ==================== USER MANAGEMENT ====================
+
+  List<AuthHiveModel> getAllUsers() => authBox.values.toList();
+
   AuthHiveModel? getUserByUsername(String username) {
     return authBox.get(username);
   }
 
-  /// Update user
   Future<bool> updateUser(AuthHiveModel user) async {
     if (authBox.containsKey(user.username)) {
       await authBox.put(user.username, user);
@@ -83,12 +109,10 @@ class AuthHiveService {
     return false;
   }
 
-  /// Delete user
   Future<void> deleteUser(String username) async {
     await authBox.delete(username);
   }
 
-  /// Delete all users
   Future<void> deleteAllUsers() async {
     await authBox.clear();
   }
@@ -123,6 +147,7 @@ class AuthHiveService {
 
   /// Close Hive
   Future<void> close() async {
-    await Hive.close();
+    await _authBox?.close();
+    await _sessionBox?.close();
   }
 }
