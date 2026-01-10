@@ -62,7 +62,7 @@ class AuthHiveService {
 
   /// Register user
   Future<AuthHiveModel> registerUser(AuthHiveModel user) async {
-    await authBox.put(user.username, user);
+    await authBox.put(user.email, user);
     return user;
   }
 
@@ -74,7 +74,7 @@ class AuthHiveService {
       );
 
       // Save session
-      await sessionBox.put(currentUserKey, user.username);
+      await sessionBox.put(currentUserKey, user.email);
       return user;
     } catch (_) {
       return null;
@@ -102,8 +102,8 @@ class AuthHiveService {
   }
 
   Future<bool> updateUser(AuthHiveModel user) async {
-    if (authBox.containsKey(user.username)) {
-      await authBox.put(user.username, user);
+    if (authBox.containsKey(user.email)) {
+      await authBox.put(user.email, user);
       return true;
     }
     return false;
@@ -125,7 +125,6 @@ class AuthHiveService {
       AuthHiveModel(
         fullName: 'Admin User',
         email: 'admin@booko.com',
-        username: 'admin',
         dob: '2002-01-30',
         gender: 'Male',
         password: 'admin123',
@@ -133,7 +132,6 @@ class AuthHiveService {
       AuthHiveModel(
         fullName: 'Test User',
         email: 'test@booko.com',
-        username: 'testuser',
         dob: '2001-06-17',
         gender: 'Female',
         password: 'test123',
@@ -141,7 +139,7 @@ class AuthHiveService {
     ];
 
     for (var user in dummyUsers) {
-      await authBox.put(user.username, user);
+      await authBox.put(user.email, user);
     }
   }
 
