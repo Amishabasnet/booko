@@ -125,6 +125,7 @@ class AuthHiveService {
       AuthHiveModel(
         fullName: 'Admin User',
         email: 'admin@booko.com',
+        phoneNumber: '9874563210',
         dob: '2002-01-30',
         gender: 'Male',
         password: 'admin123',
@@ -132,6 +133,7 @@ class AuthHiveService {
       AuthHiveModel(
         fullName: 'Test User',
         email: 'test@booko.com',
+        phoneNumber: '9863254170',
         dob: '2001-06-17',
         gender: 'Female',
         password: 'test123',

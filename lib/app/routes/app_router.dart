@@ -25,7 +25,7 @@ class AppRouter {
 
       // Auth
       case AppRoutes.login:
-        return _buildRoute(const LoginScreen(), settings);
+        return _buildRoute(LoginScreen(), settings);
 
       case AppRoutes.signup:
         return _buildRoute(const RegisterScreen(), settings);
@@ -51,7 +51,7 @@ class AppRouter {
   /// Named routes map (optional but useful)
   static Map<String, WidgetBuilder> get routes => {
     AppRoutes.splash: (_) => const SplashScreen(),
-    AppRoutes.login: (_) => const LoginScreen(),
+    AppRoutes.login: (_) => LoginScreen(),
     AppRoutes.signup: (_) => const RegisterScreen(),
     AppRoutes.dashboard: (_) => const DashboardScreen(),
   };
