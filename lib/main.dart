@@ -16,6 +16,8 @@ void main() async {
     ),
   );
 
+  // SHARED PREFERENCE OBJECT
+
   // await HiveService().init();
   runApp(const ProviderScope(child: App()));
 }
