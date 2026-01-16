@@ -1,3 +1,5 @@
+import 'package:booko/core/utils/snackbar_utils.dart';
+import 'package:booko/core/widgets/gradient_button.dart';
 import 'package:booko/features/auth/presentation/pages/login_screen.dart';
 import 'package:booko/features/auth/presentation/state/auth_state.dart';
 import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
@@ -93,7 +95,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           !confirmPasswordError) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          MaterialPageRoute(builder: (_) => LoginScreen()),
         );
       }
     });
@@ -155,6 +157,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewmodelProvider);
+
+    ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
+      if (next.status == AuthStatus.registered) {
+        SnackbarUtils.showSuccess(
+          context,
+          'Registration successful! Please login.',
+        );
+        Navigator.of(context).pop();
+      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
+        SnackbarUtils.showError(context, next.errorMessage!);
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -277,30 +291,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: genderError ? Colors.red : const Color(0xffD1D1D6),
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    hint: const Text("Select Gender"),
-                    value: selectedGender,
-                    items: ["Male", "Female", "Other"]
-                        .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedGender = value;
-                        genderError = false;
-                      });
-                    },
+              DropdownButtonFormField<String>(
+                value: selectedGender,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down),
+                hint: const Text("Select Gender"),
+                decoration: InputDecoration(
+                  hintText: "Select Gender",
+                  border: inputBorder(genderError),
+                  enabledBorder: inputBorder(genderError),
+                  focusedBorder: inputBorder(genderError),
+                  errorBorder: inputBorder(true),
+                  focusedErrorBorder: inputBorder(true),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
                   ),
                 ),
+                items: const [
+                  DropdownMenuItem(value: "Male", child: Text("Male")),
+                  DropdownMenuItem(value: "Female", child: Text("Female")),
+                  DropdownMenuItem(value: "Other", child: Text("Other")),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value;
+                    genderError = false;
+                  });
+                },
               ),
+
               if (genderError)
                 const Text(
                   "Please select gender.",
@@ -374,22 +394,60 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 30),
 
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff003366),
-                    shape: const StadiumBorder(),
-                  ),
-                  onPressed: validateForm,
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+              // SizedBox(
+              //   width: double.infinity,
+              //   height: 50,
+              //   child: ElevatedButton(
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: const Color(0xff003366),
+              //       shape: const StadiumBorder(),
+              //     ),
+              //     onPressed: validateForm,
+              //     child: const Text(
+              //       "Sign Up",
+              //       style: TextStyle(color: Colors.white, fontSize: 16),
+              //     ),
+              //   ),
+              // ),
+              GradientButton(
+                text: 'Create Account',
+                onPressed: validateForm,
+                isLoading: authState.status == AuthStatus.loading,
+              ),
+              const SizedBox(height: 8),
+
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Already have an account? ",
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        "Sign In",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xff003366),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),

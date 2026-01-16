@@ -1,64 +1,58 @@
 import 'package:booko/features/dashboard/presentation/pages/dashboard_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:booko/features/auth/presentation/pages/register_screen.dart';
-// import 'package:booko/screens/forget_password_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+/// State Providers
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
+final emailErrorProvider = StateProvider<bool>((ref) => false);
+final passwordErrorProvider = StateProvider<bool>((ref) => false);
 
-class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+final passwordVisibleProvider = StateProvider<bool>((ref) => false);
 
-  bool emailError = false;
-  bool passwordError = false;
-  bool passwordVisible = false;
+final emailErrorMsgProvider = StateProvider<String>((ref) => "");
+final passwordErrorMsgProvider = StateProvider<String>((ref) => "");
 
-  String emailErrorMsg = "";
-  String passwordErrorMsg = "";
+/// Login Screen
+class LoginScreen extends ConsumerWidget {
+  LoginScreen({super.key});
 
-  void validate() {
-    setState(() {
-      // emailError = false;
-      // passwordError = false;
-      // emailErrorMsg = "";
-      // passwordErrorMsg = "";
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-      String email = emailController.text.trim();
-      String pass = passwordController.text.trim();
+  void validate(BuildContext context, WidgetRef ref) {
+    // reset errors
+    ref.read(emailErrorProvider.notifier).state = false;
+    ref.read(passwordErrorProvider.notifier).state = false;
+    ref.read(emailErrorMsgProvider.notifier).state = "";
+    ref.read(passwordErrorMsgProvider.notifier).state = "";
 
-      // if (email != "example@gmail.com") {
-      //   emailError = true;
-      //   emailErrorMsg = "No account found with this email. Please sign up.";
-      // }
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-      // if (pass != "123456") {
-      //   passwordError = true;
-      //   passwordErrorMsg = "Incorrect Password.";
-      // }
-
-      // // Navigate to Dashboard if no errors
-      // if (!emailError && !passwordError) {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      //   );
-      // }
-      if (email == "amishabasnet@gmail.com" && pass == "987456") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      }
-    });
+    // demo login check
+    if (email == "amishabasnet@gmail.com" && password == "987456") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
+    } else {
+      ref.read(emailErrorProvider.notifier).state = true;
+      ref.read(passwordErrorProvider.notifier).state = true;
+      ref.read(emailErrorMsgProvider.notifier).state =
+          "Invalid email or password.";
+      ref.read(passwordErrorMsgProvider.notifier).state =
+          "Invalid email or password.";
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final emailError = ref.watch(emailErrorProvider);
+    final passwordError = ref.watch(passwordErrorProvider);
+    final passwordVisible = ref.watch(passwordVisibleProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -70,13 +64,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               const Text(
                 "Booko",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
+
               const Text(
                 "Welcome Back",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -88,12 +79,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
+              /// Email
               const Text(
                 "Email Address",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
-
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -113,24 +104,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               if (emailError)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    emailErrorMsg,
+                    ref.watch(emailErrorMsgProvider),
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
 
               const SizedBox(height: 20),
 
+              /// Password
               const Text(
                 "Password",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
-
               TextField(
                 controller: passwordController,
                 obscureText: !passwordVisible,
@@ -139,13 +129,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   suffixIcon: IconButton(
                     icon: Icon(
                       passwordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        passwordVisible = !passwordVisible;
-                      });
-                    },
+                    onPressed: () =>
+                        ref.read(passwordVisibleProvider.notifier).state =
+                            !passwordVisible,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(6),
@@ -162,39 +149,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
               if (passwordError)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    passwordErrorMsg,
+                    ref.watch(passwordErrorMsgProvider),
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
 
-              const SizedBox(height: 6),
-
-              // Align(
-              //   alignment: Alignment.centerRight,
-              //   child: GestureDetector(
-              //     onTap: () {
-              //       Navigator.push(
-              //         context,
-              // MaterialPageRoute(builder: (_) => ForgetPasswordScreen()),
-              //       );
-              //     },
-              //     child: const Text(
-              //       "Forget Password?",
-              //       style: TextStyle(
-              //         color: Colors.red,
-              //         fontSize: 13,
-              //         fontWeight: FontWeight.w500,
-              //       ),
-              //     ),
-              //   ),
-              // ),
               const SizedBox(height: 25),
 
+              /// Sign In Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -203,43 +169,38 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: const StadiumBorder(),
                     backgroundColor: const Color(0xff003366),
                   ),
-                  onPressed: validate,
+                  onPressed: () => validate(context, ref),
                   child: const Text(
                     "Sign In",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                    ),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => RegisterScreen()),
-                        );
-                      },
-                      child: const Text(
-                        "Sign Up",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+              /// Sign Up
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don't have an account?"),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => RegisterScreen()),
+                      );
+                    },
+                    child: const Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),

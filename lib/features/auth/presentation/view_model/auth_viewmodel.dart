@@ -28,6 +28,8 @@ class AuthViewmodel extends Notifier<AuthState> {
     required String username,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
+    // wait for 2 seconds
+    await Future.delayed(Duration(seconds: 2));
     final params = RegisterUsecaseParams(
       fullName: fullName,
       email: email,
