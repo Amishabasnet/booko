@@ -1,7 +1,6 @@
 import 'package:booko/core/constants/hive_table_constants.dart';
 import 'package:booko/features/auth/data/models/auth_hive_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// Provider
@@ -67,7 +66,7 @@ class AuthHiveService {
   }
 
   /// Login user
-  Future<AuthHiveModel?> loginUser(String email, String password) async {
+  Future<AuthHiveModel?> login(String email, String password) async {
     try {
       final user = authBox.values.firstWhere(
         (u) => u.email == email && u.password == password,

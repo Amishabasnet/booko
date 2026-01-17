@@ -1,15 +1,16 @@
 import 'package:booko/features/auth/presentation/pages/login_screen.dart';
 import 'package:booko/features/onboarding/domain/entities/onboard_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentIndex = 0;
 
@@ -30,6 +31,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       "subtitle": "Enjoy a seamless movie booking journey.",
     },
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   } else {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => LoginScreen()),
                     );
                   }
                 },

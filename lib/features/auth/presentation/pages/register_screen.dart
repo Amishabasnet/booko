@@ -292,7 +292,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: selectedGender,
+                initialValue: selectedGender,
                 isExpanded: true,
                 icon: const Icon(Icons.keyboard_arrow_down),
                 hint: const Text("Select Gender"),

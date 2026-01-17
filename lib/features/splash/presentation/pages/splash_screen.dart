@@ -1,24 +1,43 @@
-import 'package:booko/features/onboarding/presentation/pages/onboarding_screen.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-class SplashScreen extends StatefulWidget {
+import 'package:booko/core/services/storage/user_session_service.dart';
+import 'package:booko/features/onboarding/presentation/pages/onboarding_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to HomeScreen after 4 seconds
-    Timer(Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => OnboardingScreen()),
-      );
+
+    // Navigate to OnboardingScreen after 4 seconds
+    Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+      // );
+      // check if user already logged in
+      final UserSessionService = ref.read(UserSessionServiceProvider);
+      final isloggedIn = UserSessionService.isUserLoggedIn();
+      if (isloggedIn) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      }
     });
   }
 
@@ -35,21 +54,13 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 240,
               height: 120,
             ),
-            SizedBox(height: 20),
-            // App name
-            // Text(
-            //   'Booko',
-            //   style: TextStyle(
-            //     fontSize: 24,
-            //     fontWeight: FontWeight.bold,
-            //     color: Colors.orangeAccent,
-            //   ),
-            // ),
-            SizedBox(height: 10),
+            const SizedBox(height: 20),
 
-            Text(
+            const SizedBox(height: 10),
+
+            const Text(
               'Your ultimate movie ticketing app',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
+              style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
           ],
         ),
