@@ -1,4 +1,5 @@
 import 'package:booko/core/constants/hive_table_constants.dart';
+import 'package:booko/features/auth/data/models/auth_api_model.dart';
 import 'package:booko/features/auth/domain/entities/auth_entity.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
@@ -16,9 +17,9 @@ class AuthHiveModel extends HiveObject {
   @HiveField(3)
   final String? phoneNumber;
   @HiveField(4)
-  final String dob;
+  final String? dob;
   @HiveField(5)
-  final String gender;
+  final String? gender;
   @HiveField(6)
   final String? password;
 
@@ -27,8 +28,8 @@ class AuthHiveModel extends HiveObject {
     required this.fullName,
     required this.email,
     this.phoneNumber,
-    required this.dob,
-    required this.gender,
+    this.dob,
+    this.gender,
     this.password,
   }) : authId = authId ?? Uuid().v4();
 
@@ -61,4 +62,6 @@ class AuthHiveModel extends HiveObject {
   static List<AuthEntity> toEntityList(List<AuthHiveModel> models) {
     return models.map((model) => model.toEntity()).toList();
   }
+
+  static fromApiModel(AuthApiModel user) {}
 }

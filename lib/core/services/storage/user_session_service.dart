@@ -27,18 +27,19 @@ class UserSessionService {
   // store user session data
   Future<void> saveUserSession({
     required String userId,
-    required String email,
+    required String? email,
     required String fullName,
-    required String dob,
-    required String gender,
+    required String? dob,
+    required String? gender,
     required String? phoneNumber,
+    required hiveModel,
   }) async {
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
-    await _prefs.setString(_keyUserEmail, email);
+    await _prefs.setString(_keyUserEmail, email!);
     await _prefs.setString(_keyUserFullName, fullName);
-    await _prefs.setString(_keyUserDOB, dob);
-    await _prefs.setString(_keyUserGender, gender);
+    await _prefs.setString(_keyUserDOB, dob!);
+    await _prefs.setString(_keyUserGender, gender!);
     if (phoneNumber != null) {
       await _prefs.setString(_keyUserPhoneNumber, phoneNumber);
     }
