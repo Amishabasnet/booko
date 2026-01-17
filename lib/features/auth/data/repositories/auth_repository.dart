@@ -25,8 +25,8 @@ class AuthRepository implements IAuthRepository {
   ) async {
     try {
       return _authDatasource.login(email, password).then((model) {
-        final entity = model.toEntity();
-        return Right(entity);
+        final entity = model?.toEntity();
+        return Right(entity!);
       });
     } catch (e) {
       return Future.value(Left(LocalDatabaseFailure(message: e.toString())));

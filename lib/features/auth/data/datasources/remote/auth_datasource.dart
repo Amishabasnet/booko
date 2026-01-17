@@ -1,9 +1,7 @@
 import 'package:booko/features/auth/data/models/auth_hive_model.dart';
 
-abstract interface class IAuthDatasource {
-  Future<bool> register(AuthHiveModel model);
-  Future<AuthHiveModel> login(String email, String password);
+abstract class IAuthDatasource {
+  Future<AuthHiveModel?> login(String email, String password);
   Future<bool> logout();
-
-  // GET EMAIL EXISTS
+  Future<bool> register(AuthHiveModel model);
 }

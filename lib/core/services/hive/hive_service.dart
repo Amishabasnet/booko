@@ -67,7 +67,7 @@ class AuthHiveService {
   }
 
   /// Login user
-  Future<AuthHiveModel?> loginUser(String email, String password) async {
+  Future<AuthHiveModel?> login(String email, String password) async {
     try {
       final user = authBox.values.firstWhere(
         (u) => u.email == email && u.password == password,
