@@ -14,7 +14,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final fullNameController = TextEditingController();
+  final nameController = TextEditingController();
   final emailController = TextEditingController();
   final mobileController = TextEditingController();
   final dobController = TextEditingController();
@@ -26,7 +26,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool passwordVisible = false;
   bool confirmPasswordVisible = false;
 
-  bool fullNameError = false;
+  bool nameError = false;
   bool emailError = false;
   bool mobileError = false;
   bool dobError = false;
@@ -41,21 +41,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void validateForm() {
     setState(() {
-      fullNameError = emailError = mobileError = dobError = genderError =
+      nameError = emailError = mobileError = dobError = genderError =
           passwordError = confirmPasswordError = false;
 
       emailErrorMsg = mobileErrorMsg = passwordErrorMsg = confirmPasswordMsg =
           "";
 
-      String fullName = fullNameController.text.trim();
+      String name = nameController.text.trim();
       String email = emailController.text.trim();
       String mobile = mobileController.text.trim();
       String dob = dobController.text.trim();
       String pass = passwordController.text.trim();
       String confirmPass = confirmPasswordController.text.trim();
 
-      if (fullName.isEmpty) {
-        fullNameError = true;
+      if (name.isEmpty) {
+        nameError = true;
       }
 
       if (!email.contains("@")) {
@@ -86,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         confirmPasswordMsg = "Passwords do not match.";
       }
 
-      if (!fullNameError &&
+      if (!nameError &&
           !emailError &&
           !mobileError &&
           !dobError &&
@@ -121,7 +121,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> signUp() async {
     validateForm();
 
-    if (fullNameError ||
+    if (nameError ||
         emailError ||
         mobileError ||
         dobError ||
@@ -134,7 +134,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     await ref
         .read(authViewmodelProvider.notifier)
         .register(
-          fullName: fullNameController.text.trim(),
+          name: nameController.text.trim(),
           email: emailController.text.trim(),
           phoneNumber: mobileController.text.trim(),
           dob: dobController.text.trim(),
@@ -204,15 +204,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const Text("Name", style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
-                controller: fullNameController,
+                controller: nameController,
                 decoration: InputDecoration(
                   hintText: "Please enter your full name.",
-                  border: inputBorder(fullNameError),
-                  enabledBorder: inputBorder(fullNameError),
-                  focusedBorder: inputBorder(fullNameError),
+                  border: inputBorder(nameError),
+                  enabledBorder: inputBorder(nameError),
+                  focusedBorder: inputBorder(nameError),
                 ),
               ),
-              if (fullNameError)
+              if (nameError)
                 const Text(
                   "Required.",
                   style: TextStyle(color: Colors.red, fontSize: 12),
@@ -445,6 +445,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),

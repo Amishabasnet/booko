@@ -19,7 +19,7 @@ class AuthViewmodel extends Notifier<AuthState> {
   }
 
   Future<void> register({
-    required String fullName,
+    required String name,
     required String email,
     String? phoneNumber,
     String? dob,
@@ -31,7 +31,7 @@ class AuthViewmodel extends Notifier<AuthState> {
     // wait for 2 seconds
     await Future.delayed(Duration(seconds: 2));
     final params = RegisterUsecaseParams(
-      fullName: fullName,
+      name: name,
       email: email,
       phoneNumber: phoneNumber,
       dob: dob,

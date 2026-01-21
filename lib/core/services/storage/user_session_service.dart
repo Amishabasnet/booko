@@ -19,7 +19,7 @@ class UserSessionService {
   static const String _keyIsLoggedIn = 'is_logged_in';
   static const String _keyUserId = 'user_id';
   static const String _keyUserEmail = 'user_email';
-  static const String _keyUserFullName = 'user_full_name';
+  static const String _keyUserName = 'user_name';
   static const String _keyUserPhoneNumber = 'user_phone_number';
   static const String _keyUserDOB = 'user_DOB';
   static const String _keyUserGender = 'user_gender';
@@ -28,7 +28,7 @@ class UserSessionService {
   Future<void> saveUserSession({
     required String userId,
     required String? email,
-    required String fullName,
+    required String name,
     required String? dob,
     required String? gender,
     required String? phoneNumber,
@@ -37,7 +37,7 @@ class UserSessionService {
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
     await _prefs.setString(_keyUserEmail, email!);
-    await _prefs.setString(_keyUserFullName, fullName);
+    await _prefs.setString(_keyUserName, name);
     await _prefs.setString(_keyUserDOB, dob!);
     await _prefs.setString(_keyUserGender, gender!);
     if (phoneNumber != null) {
@@ -50,7 +50,7 @@ class UserSessionService {
     await _prefs.remove(_keyIsLoggedIn);
     await _prefs.remove(_keyUserId);
     await _prefs.remove(_keyUserEmail);
-    await _prefs.remove(_keyUserFullName);
+    await _prefs.remove(_keyUserName);
     await _prefs.remove(_keyUserPhoneNumber);
     await _prefs.remove(_keyUserDOB);
     await _prefs.remove(_keyUserGender);
@@ -69,7 +69,7 @@ class UserSessionService {
   }
 
   String? getUserFullName() {
-    return _prefs.getString(_keyUserFullName);
+    return _prefs.getString(_keyUserName);
   }
 
   String? getUserPhoneNumber() {

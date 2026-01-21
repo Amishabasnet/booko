@@ -33,7 +33,7 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
         await _userSessionService.saveUserSession(
           userId: user.authId!,
           email: user.email,
-          fullName: user.fullName,
+          name: user.name,
           dob: user.dob,
           gender: user.gender,
           phoneNumber: user.phoneNumber,

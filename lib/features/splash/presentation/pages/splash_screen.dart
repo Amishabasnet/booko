@@ -57,11 +57,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             const SizedBox(height: 20),
 
             const SizedBox(height: 10),
-
-            const Text(
-              'Your ultimate movie ticketing app',
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
           ],
         ),
       ),
