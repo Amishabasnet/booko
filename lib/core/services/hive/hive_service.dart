@@ -122,7 +122,7 @@ class AuthHiveService {
 
     final dummyUsers = [
       AuthHiveModel(
-        fullName: 'Admin User',
+        name: 'Admin User',
         email: 'admin@booko.com',
         phoneNumber: '9874563210',
         dob: '2002-01-30',
@@ -130,7 +130,7 @@ class AuthHiveService {
         password: 'admin123',
       ),
       AuthHiveModel(
-        fullName: 'Test User',
+        name: 'Test User',
         email: 'test@booko.com',
         phoneNumber: '9863254170',
         dob: '2001-06-17',

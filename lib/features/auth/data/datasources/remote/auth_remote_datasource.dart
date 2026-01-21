@@ -37,7 +37,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
   Future<AuthApiModel?> login(String email, String password) async {
     try {
       final response = await _apiClient.post(
-        ApiEndpoints.studentLogin,
+        ApiEndpoints.userLogin,
         data: {'email': email, 'password': password},
       );
 
@@ -50,7 +50,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         await _userSessionService.saveUserSession(
           userId: '',
           email: '',
-          fullName: '',
+          name: '',
           dob: '',
           gender: '',
           phoneNumber: '',
@@ -70,7 +70,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
   @override
   Future<AuthApiModel> register(AuthApiModel user) async {
     final response = await _apiClient.post(
-      ApiEndpoints.students,
+      ApiEndpoints.userRegister,
       data: user.toJson(),
     );
 

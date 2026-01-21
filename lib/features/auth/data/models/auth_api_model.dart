@@ -2,7 +2,7 @@ import 'package:booko/features/auth/domain/entities/auth_entity.dart';
 
 class AuthApiModel {
   final String? id;
-  final String fullname;
+  final String name;
   final String email;
   final String? phoneNumber;
   final String? dob;
@@ -11,7 +11,7 @@ class AuthApiModel {
 
   AuthApiModel({
     this.id,
-    required this.fullname,
+    required this.name,
     required this.email,
     this.phoneNumber,
     this.dob,
@@ -23,7 +23,7 @@ class AuthApiModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'fullname': fullname,
+      'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
       'dob': dob,
@@ -36,7 +36,7 @@ class AuthApiModel {
   factory AuthApiModel.fromJson(Map<String, dynamic> json) {
     return AuthApiModel(
       id: json['id'] as String?,
-      fullname: json['fullname'] as String,
+      name: json['name'] as String,
       email: json['email'] as String,
       phoneNumber: json['phoneNumber'] as String?,
       dob: json['dob'] as String?,
@@ -49,7 +49,7 @@ class AuthApiModel {
   AuthEntity toEntity() {
     return AuthEntity(
       authId: id,
-      fullName: fullname,
+      name: name,
       email: email,
       phoneNumber: phoneNumber,
       dob: dob,
@@ -62,7 +62,7 @@ class AuthApiModel {
   factory AuthApiModel.fromEntity(AuthEntity entity) {
     return AuthApiModel(
       id: entity.authId,
-      fullname: entity.fullName,
+      name: entity.name,
       email: entity.email,
       phoneNumber: entity.phoneNumber,
       dob: entity.dob,
