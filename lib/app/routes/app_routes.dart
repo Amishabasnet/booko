@@ -1,3 +1,4 @@
+import 'package:booko/features/auth/presentation/pages/login_screen.dart';
 import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
 import 'package:flutter/src/widgets/framework.dart';
 
@@ -14,5 +15,10 @@ class AppRoutes {
   static void pushReplacement(
     BuildContext context,
     DashboardHome dashboardHome,
+  ) {}
+
+  static void pushAndRemoveUntil(
+    BuildContext context,
+    LoginScreen loginScreen,
   ) {}
 }
