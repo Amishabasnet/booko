@@ -190,18 +190,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _avatar(profile),
             const SizedBox(height: 12),
 
+            /// Avatar
+            const CircleAvatar(
+              radius: 42,
+              backgroundImage: NetworkImage(
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            /// Name
             Text(
               profile.name,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
 
+
+            const SizedBox(height: 4),
+
+            /// Username
             Text(
               profile.username,
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(height: 20),
 
+
+            const SizedBox(height: 20),
+
+            /// Edit Button (Theme color)
             SizedBox(
               width: double.infinity,
               height: 46,
