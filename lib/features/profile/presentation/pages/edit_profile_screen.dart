@@ -13,7 +13,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phone = TextEditingController();
   final _dob = TextEditingController();
 
-  String _gender = "Female";
+  String _gender = "gender";
 
   InputDecoration _decoration(String label) {
     return InputDecoration(
@@ -88,9 +88,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "WELCOME BACK",
+                        "WELCOME BACK!",
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

@@ -1,88 +1,137 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
-class ProfileScreen extends StatelessWidget {
+import 'edit_profile_screen.dart';
+
+final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((
+  ref,
+) {
+  return ProfileNotifier();
+});
+
+class ProfileState {
+  final String name;
+  final String username;
+  final String email;
+  final String phone;
+
+  const ProfileState({
+    required this.name,
+    required this.username,
+    required this.email,
+    required this.phone,
+  });
+
+  ProfileState copyWith({
+    String? name,
+    String? username,
+    String? email,
+    String? phone,
+  }) {
+    return ProfileState(
+      name: name ?? this.name,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+    );
+  }
+}
+
+class ProfileNotifier extends StateNotifier<ProfileState> {
+  ProfileNotifier()
+    : super(
+        const ProfileState(
+          name: 'amisha',
+          username: 'abcxyz',
+          email: '@gmail.com',
+          phone: '+91 6895312',
+        ),
+      );
+
+  void updateProfile(ProfileState newState) {
+    state = newState;
+  }
+}
+
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  void _openEditProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(profileProvider);
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: const Text('My Profile'),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // TODO: Navigate to Edit Profile Screen
-              print("Edit profile tapped");
-            },
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: _openEditProfile,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Profile Image
-            CircleAvatar(
-              radius: 55,
-              backgroundColor: Colors.grey.shade300,
-              child: const CircleAvatar(
-                radius: 52,
-                backgroundImage: AssetImage("assets/profile.jpg"),
-                // Or NetworkImage("https://example.com/profile.jpg")
+            /// Avatar
+            const CircleAvatar(
+              radius: 42,
+              backgroundImage: NetworkImage(
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
               ),
             ),
+            const SizedBox(height: 12),
 
-            const SizedBox(height: 16),
-
-            // Name
-            const Text(
-              "Amisha",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            /// Name
+            Text(
+              profile.name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 4),
 
-            // Email
+            /// Username
             Text(
-              "amisha@example.com",
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              profile.username,
+              style: TextStyle(color: Colors.grey.shade600),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            // Info Cards
-            _infoTile(
-              icon: Icons.phone,
-              title: "Phone",
-              value: "+977 98XXXXXXXX",
-            ),
-
-            _infoTile(
-              icon: Icons.location_on,
-              title: "Location",
-              value: "Kathmandu, Nepal",
+            /// Edit Button (Theme color)
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                ),
+                onPressed: _openEditProfile,
+                child: const Text(
+                  'Edit Profile',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _infoTile({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
-    return Card(
-      elevation: 1,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.blue),
-        title: Text(title),
-        subtitle: Text(value),
       ),
     );
   }
