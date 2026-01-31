@@ -1,3 +1,4 @@
+import 'package:booko/features/profile/data/models/profile_hive_model.dart';
 import 'package:hive/hive.dart';
 
 abstract class ProfileLocalDataSource {
