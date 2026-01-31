@@ -1,6 +1,6 @@
 import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
 import 'package:booko/features/dashboard/presentation/pages/offers_screen.dart';
-import 'package:booko/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
 import 'package:booko/features/dashboard/presentation/pages/search_screen.dart';
 import 'package:flutter/material.dart';
 
