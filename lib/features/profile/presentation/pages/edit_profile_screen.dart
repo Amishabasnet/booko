@@ -69,7 +69,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            /// PROFILE HEADER
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
