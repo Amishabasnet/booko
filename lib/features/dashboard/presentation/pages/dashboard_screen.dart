@@ -1,6 +1,8 @@
 import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
 import 'package:booko/features/dashboard/presentation/pages/offers_screen.dart';
-import 'package:booko/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:booko/features/dashboard/presentation/pages/profile_screen.dart'
+    as feature_profile;
+
 import 'package:booko/features/dashboard/presentation/pages/search_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DashboardHome(),
     SearchScreen(),
     OffersScreen(),
-    ProfileScreen(),
+    feature_profile.ProfileScreen(),
   ];
 
   @override

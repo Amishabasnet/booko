@@ -1,7 +1,10 @@
+import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key});
+  final ProfileData? initialProfile;
+
+  const EditProfileScreen({super.key, this.initialProfile});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -13,7 +16,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _phone = TextEditingController();
   final _dob = TextEditingController();
 
-  String _gender = "gender";
+  String? _gender; // ✅ nullable for "no selection" initially
+  DateTime? _dobValue;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ If you passed initialProfile, preload values
+    final p = widget.initialProfile;
+    if (p != null) {
+      _fullName.text = p.name;
+      _email.text = p.email;
+      _phone.text = p.phoneNumber;
+      _gender = p.gender.isEmpty ? null : p.gender;
+
+      _dobValue = p.dob;
+      _dob.text =
+          "${p.dob.day.toString().padLeft(2, '0')}-${p.dob.month.toString().padLeft(2, '0')}-${p.dob.year}";
+    }
+  }
+
+  @override
+  void dispose() {
+    _fullName.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _dob.dispose();
+    super.dispose();
+  }
 
   InputDecoration _decoration(String label) {
     return InputDecoration(
@@ -31,12 +62,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _pickDob() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2005, 4, 27),
+      initialDate: _dobValue ?? DateTime(2005, 4, 27),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
 
     if (picked != null) {
+      _dobValue = picked;
       _dob.text =
           "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
       setState(() {});
@@ -94,7 +126,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       ),
                       Text(
-                        _fullName.text.toUpperCase(),
+                        _fullName.text.isEmpty
+                            ? "USER"
+                            : _fullName.text.toUpperCase(),
                         style: const TextStyle(
                           color: red,
                           fontWeight: FontWeight.bold,
@@ -105,13 +139,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
 
             /// FORM
             TextField(
               controller: _fullName,
               decoration: _decoration("Full Name"),
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 14),
 
@@ -133,21 +167,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _dob,
               readOnly: true,
               onTap: _pickDob,
-              decoration: _decoration(
-                "Date of Birth",
-              ).copyWith(suffixIcon: const Icon(Icons.calendar_today)),
+              decoration: _decoration("Date of Birth")
+                  .copyWith(suffixIcon: const Icon(Icons.calendar_today)),
             ),
             const SizedBox(height: 14),
 
+            /// ✅ Gender Dropdown
             DropdownButtonFormField<String>(
-              value: _gender,
+              value: _gender, // can be null
               decoration: _decoration("Gender"),
+              hint: const Text("Select gender"),
               items: const [
                 DropdownMenuItem(value: "Female", child: Text("Female")),
                 DropdownMenuItem(value: "Male", child: Text("Male")),
                 DropdownMenuItem(value: "Other", child: Text("Other")),
               ],
-              onChanged: (v) => setState(() => _gender = v!),
+              onChanged: (v) => setState(() => _gender = v),
             ),
 
             const SizedBox(height: 28),
@@ -162,7 +197,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  // TODO: save logic (provider/hive)
+                },
                 child: const Text(
                   "Save",
                   style: TextStyle(fontWeight: FontWeight.bold),
