@@ -27,9 +27,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       appBar: AppBar(
         title: const Text(
           'Movie, Genres & Language',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-        centerTitle: true,
         actions: [
           TextButton(
             onPressed: () {
