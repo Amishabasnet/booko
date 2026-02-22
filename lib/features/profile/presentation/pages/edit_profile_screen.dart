@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'profile_screen.dart'; // <-- adjust import path based on your folder structure
+import 'profile_screen.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   final ProfileData? initialProfile;

@@ -12,7 +12,7 @@ import 'edit_profile_screen.dart';
 const String _profileBoxName = 'profileBox';
 const String _profileKey = 'profile';
 
-/// Provider
+// Provider
 final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((
   ref,
 ) {
@@ -67,7 +67,7 @@ class ProfileState {
   ProfileState copyWith({bool? isLoading, ProfileData? profile}) {
     return ProfileState(
       isLoading: isLoading ?? this.isLoading,
-      profile: profile,
+      profile: profile ?? this.profile,
     );
   }
 }
@@ -108,13 +108,6 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     }
   }
 
-  Future<void> saveProfile(ProfileData data) async {
-    state = state.copyWith(profile: data);
-    try {
-      await _box.put(_profileKey, _toModel(data));
-    } catch (_) {}
-  }
-
   Future<void> updateImage(String? path) async {
     final current = state.profile;
     if (current == null) return;
@@ -126,6 +119,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       await _box.put(_profileKey, _toModel(updated));
     } catch (_) {}
   }
+
+  Future<void> saveProfile(ProfileData data) async {}
 }
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -138,19 +133,25 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
 
-  void _openEditProfile() {
-    final current = ref.read(profileProvider).profile;
+  void _openEditProfile(ProfileData? current) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EditProfileScreen(initialProfile: current),
       ),
-    );
+    ).then((_) => ref.read(profileProvider.notifier).loadProfile());
   }
 
-  Future<void> _showImagePickerSheet() async {
-    final st = ref.read(profileProvider);
-    if (st.profile == null) return;
+  ImageProvider _imageProvider(ProfileData? profile) {
+    if (profile?.imagePath != null && profile!.imagePath!.isNotEmpty) {
+      return FileImage(File(profile.imagePath!));
+    }
+    // If you don't have this asset, replace with NetworkImage('https://i.pravatar.cc/200')
+    return const AssetImage('assets/images/default_avatar.png');
+  }
+
+  Future<void> _showImagePickerSheet(ProfileData? profile) async {
+    if (profile == null) return;
     if (!mounted) return;
 
     showModalBottomSheet(
@@ -209,188 +210,145 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _avatar(ProfileData? profile) {
-    final ImageProvider imageProvider =
-        (profile?.imagePath != null && profile!.imagePath!.isNotEmpty)
-        ? FileImage(File(profile.imagePath!))
-        : const NetworkImage(
-            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
-          );
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CircleAvatar(radius: 42, backgroundImage: imageProvider),
-        Positioned(
-          right: -2,
-          bottom: -2,
-          child: InkWell(
-            onTap: profile == null ? _openEditProfile : _showImagePickerSheet,
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black12),
-              ),
-              child: const Icon(Icons.photo_camera_outlined, size: 18),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDob(DateTime dob) {
-    final d = dob.day.toString().padLeft(2, '0');
-    final m = dob.month.toString().padLeft(2, '0');
-    final y = dob.year.toString();
-    return '$d/$m/$y';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(profileProvider);
-    final profile = state.profile;
-    final colors = Theme.of(context).colorScheme;
+    final st = ref.watch(profileProvider);
+    final profile = st.profile;
 
-    // ✅ Loading state
-    if (state.isLoading) {
+    if (st.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // ✅ Empty state
-    if (profile == null) {
-      return Scaffold(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: const Color(0xffF3F4F7),
         appBar: AppBar(
-          title: const Text('My Profile'),
+          backgroundColor: const Color(0xff1E2B4A),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: _openEditProfile,
-            ),
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _avatar(null),
-              const SizedBox(height: 12),
-              const Text(
-                'No profile found',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Tap "Edit" to create your profile.',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: colors.onPrimary,
-                  ),
-                  onPressed: _openEditProfile,
-                  child: const Text(
-                    'Create Profile',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
+          title: const Text(
+            'Profile',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
           ),
         ),
-      );
-    }
-
-    // ✅ Normal state (profile exists)
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: _openEditProfile,
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        body: Column(
           children: [
-            _avatar(profile),
-            const SizedBox(height: 12),
-
-            Text(
-              profile.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-
-            // ✅ FIXED: use email (no username field)
-            Text(profile.email, style: TextStyle(color: Colors.grey.shade600)),
-            const SizedBox(height: 20),
-
-            // Optional: show phone, dob, gender (you already have them)
-            _InfoRow(label: 'Phone', value: profile.phoneNumber),
-            _InfoRow(label: 'DOB', value: _formatDob(profile.dob)),
-            _InfoRow(label: 'Gender', value: profile.gender),
-
-            const Spacer(),
-
-            SizedBox(
+            // Header: avatar + welcome + edit icon
+            Container(
               width: double.infinity,
-              height: 46,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                ),
-                onPressed: _openEditProfile,
-                child: const Text(
-                  'Edit Profile',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+              decoration: BoxDecoration(
+                color: const Color(0xffF3F4F7),
+                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 34,
+                    backgroundColor: Colors.grey.shade300,
+                    backgroundImage: profile == null
+                        ? null
+                        : _imageProvider(profile),
+                    child: profile == null
+                        ? const Icon(
+                            Icons.person_outline,
+                            size: 30,
+                            color: Colors.black54,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'WELCOME BACK',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          (profile?.name.isNotEmpty == true)
+                              ? profile!.name.toUpperCase()
+                              : 'USER',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _openEditProfile(profile),
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit, size: 18),
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            // Tabs
+            const TabBar(
+              indicatorColor: Color(0xff1E2B4A),
+              labelColor: Color(0xff1E2B4A),
+              unselectedLabelColor: Colors.black54,
+              labelStyle: TextStyle(fontWeight: FontWeight.w800),
+              tabs: [
+                Tab(text: 'My Profile'),
+                Tab(text: 'My Tickets'),
+              ],
+            ),
+
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // ✅ Simple My Profile tab (as you requested)
+                  const Center(
+                    child: Text(
+                      'No profile found',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                  // Tickets tab
+                  const Center(
+                    child: Text(
+                      'My Tickets (coming soon)',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Optional: quick change photo (only if profile exists)
+            if (profile != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: TextButton.icon(
+                  onPressed: () => _showImagePickerSheet(profile),
+                  icon: const Icon(Icons.photo_camera_outlined),
+                  label: const Text('Change photo'),
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(label, style: TextStyle(color: Colors.grey.shade700)),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
       ),
     );
   }
