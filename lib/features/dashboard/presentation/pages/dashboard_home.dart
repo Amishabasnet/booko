@@ -1,110 +1,121 @@
 import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../../search/data/models/movie_hive_model.dart';
-import '../../../search/presentation/providers/search_providers.dart';
-
-class DashboardHome extends ConsumerWidget {
+class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
-
-  void _openMovieDetail(BuildContext context, String movieId) {
+  static const List<Map<String, String>> nowShowing = [
+    {
+      'title': 'Predator: Badlands',
+      'image': 'assets/images/predator-badlands.jpg',
+      'language': 'English',
+      'duration': '1h 45m',
+      'description':
+          'A new Predator story set in harsh Badlands. Action, survival, and intense hunting.',
+    },
+    {
+      'title': 'Paran',
+      'image': 'assets/images/paran.jpg',
+      'language': 'Nepali',
+      'duration': '1h 50m',
+      'description':
+          'A Nepali thriller-drama with suspense and mystery elements.',
+    },
+    {
+      'title': 'Man Binako Dhan',
+      'image': 'assets/images/manbinakodhan.jpg',
+      'language': 'Nepali',
+      'duration': '2h 5m',
+      'description':
+          'A heartfelt Nepali story about relationships, struggle and growth.',
+    },
+    {
+      'title': 'The Running Man',
+      'image': 'assets/images/runningman.jpg',
+      'language': 'English',
+      'duration': '2h 0m',
+      'description':
+          'A high-stakes action movie where survival becomes entertainment.',
+    },
+    {
+      'title': 'Wicked: For Good',
+      'image': 'assets/images/wicked.jpg',
+      'language': 'English',
+      'duration': '1h 55m',
+      'description':
+          'A musical fantasy journey exploring friendship, destiny and magic.',
+    },
+  ];
+  static const List<Map<String, String>> comingSoon = [
+    {
+      'title': 'Avengers: Secret Wars',
+      'image': 'assets/images/avengers.jpg',
+      'language': 'English',
+      'duration': '2h 30m',
+      'description':
+          'Marvel heroes unite in a multiverse-level war with massive consequences.',
+    },
+    {
+      'title': 'Joker: Folie à Deux',
+      'image': 'assets/images/joker.jpg',
+      'language': 'English',
+      'duration': '2h 5m',
+      'description':
+          'A dark psychological story continuing Joker’s chaotic path.',
+    },
+    {
+      'title': 'Dune: Part Three',
+      'image': 'assets/images/dune3.jpeg',
+      'language': 'English',
+      'duration': '2h 35m',
+      'description':
+          'Epic sci-fi saga continues with power, prophecy, and war on Arrakis.',
+    },
+  ];
+  void _openMovieDetail(BuildContext context, Map<String, String> movie) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => MovieDetailScreen(movieId: movieId, movie: {}),
+        builder: (_) => MovieDetailScreen(movie: movie, movieId: ''),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // ✅ Ensure Hive is initialized (same init provider you used in search)
-    final hiveInit = ref.watch(searchHiveInitProvider);
-
-    return hiveInit.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) =>
-          Scaffold(body: Center(child: Text('Hive init failed: $e'))),
-      data: (_) {
-        final box = ref.watch(movieBoxProvider);
-
-        return DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: const Text(
-                'Booko',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              backgroundColor: const Color(0xff003366),
-              bottom: const TabBar(
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                tabs: [
-                  Tab(text: 'NOW SHOWING'),
-                  Tab(text: 'COMING SOON'),
-                ],
-              ),
-            ),
-            body: ValueListenableBuilder(
-              valueListenable: box.listenable(),
-              builder: (_, Box<MovieHiveModel> b, __) {
-                final all = b.values.toList();
-
-                final nowShowing = all
-                    .where((m) => m.status == 'now_showing')
-                    .toList();
-
-                final comingSoon = all
-                    .where((m) => m.status == 'coming_soon')
-                    .toList();
-
-                return TabBarView(
-                  children: [
-                    _buildMovieGrid(
-                      context,
-                      nowShowing,
-                      onTap: (id) {
-                        _openMovieDetail(context, id);
-                      },
-                    ),
-                    _buildMovieGrid(
-                      context,
-                      comingSoon,
-                      onTap: (id) {
-                        _openMovieDetail(context, id);
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Booko',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
-        );
-      },
+          backgroundColor: const Color(0xff003366),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: 'NOW SHOWING'),
+              Tab(text: 'COMING SOON'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildMovieGrid(context, nowShowing),
+            _buildMovieGrid(context, comingSoon),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildMovieGrid(
     BuildContext context,
-    List<MovieHiveModel> movies, {
-    required void Function(String movieId) onTap,
-  }) {
-    if (movies.isEmpty) {
-      return const Center(child: Text('No movies available'));
-    }
-
+    List<Map<String, String>> movies,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
@@ -117,9 +128,8 @@ class DashboardHome extends ConsumerWidget {
         ),
         itemBuilder: (context, index) {
           final movie = movies[index];
-
           return InkWell(
-            onTap: () => onTap(movie.id),
+            onTap: () => _openMovieDetail(context, movie),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
@@ -127,7 +137,7 @@ class DashboardHome extends ConsumerWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset(
-                      movie.posterPath,
+                      movie['image'] ?? '',
                       fit: BoxFit.cover,
                       width: double.infinity,
                       errorBuilder: (_, __, ___) => Container(
@@ -143,7 +153,7 @@ class DashboardHome extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  movie.title,
+                  movie['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                   maxLines: 2,
@@ -151,7 +161,7 @@ class DashboardHome extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${movie.language} | ${movie.duration}',
+                  '${movie['language'] ?? ''} | ${movie['duration'] ?? ''}',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
