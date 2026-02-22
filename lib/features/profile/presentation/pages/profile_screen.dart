@@ -12,7 +12,7 @@ import 'edit_profile_screen.dart';
 const String _profileBoxName = 'profileBox';
 const String _profileKey = 'profile';
 
-/// provider
+/// Provider
 final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((
   ref,
 ) {
@@ -110,7 +110,6 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
   Future<void> saveProfile(ProfileData data) async {
     state = state.copyWith(profile: data);
-
     try {
       await _box.put(_profileKey, _toModel(data));
     } catch (_) {}
@@ -129,9 +128,6 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   }
 }
 
-/// ----------------------------------
-/// Screen
-/// ----------------------------------
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -155,7 +151,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _showImagePickerSheet() async {
     final st = ref.read(profileProvider);
     if (st.profile == null) return;
-
     if (!mounted) return;
 
     showModalBottomSheet(
@@ -260,6 +255,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profile = state.profile;
     final colors = Theme.of(context).colorScheme;
 
+    // ✅ Loading state
+    if (state.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // ✅ Empty state
+    if (profile == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('My Profile'),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: _openEditProfile,
+            ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _avatar(null),
+              const SizedBox(height: 12),
+              const Text(
+                'No profile found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tap "Edit" to create your profile.',
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                  ),
+                  onPressed: _openEditProfile,
+                  child: const Text(
+                    'Create Profile',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // ✅ Normal state (profile exists)
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Profile'),
@@ -273,73 +324,73 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  _avatar(profile),
-                  const SizedBox(height: 12),
-                  if (profile == null) ...[
-                    const Text(
-                      'Complete your profile',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Add your details to continue.',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
-                    const SizedBox(height: 20),
-                  ] else ...[
-                    Text(
-                      profile.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      profile.email,
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      profile.phoneNumber,
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'DOB: ${_formatDob(profile.dob)}',
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Gender: ${profile.gender}',
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: colors.onPrimary,
-                      ),
-                      onPressed: _openEditProfile,
-                      child: Text(
-                        profile == null ? 'Add Profile' : 'Edit Profile',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
+        child: Column(
+          children: [
+            _avatar(profile),
+            const SizedBox(height: 12),
+
+            Text(
+              profile.name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+
+            // ✅ FIXED: use email (no username field)
+            Text(profile.email, style: TextStyle(color: Colors.grey.shade600)),
+            const SizedBox(height: 20),
+
+            // Optional: show phone, dob, gender (you already have them)
+            _InfoRow(label: 'Phone', value: profile.phoneNumber),
+            _InfoRow(label: 'DOB', value: _formatDob(profile.dob)),
+            _InfoRow(label: 'Gender', value: profile.gender),
+
+            const Spacer(),
+
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                ),
+                onPressed: _openEditProfile,
+                child: const Text(
+                  'Edit Profile',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(label, style: TextStyle(color: Colors.grey.shade700)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
   }

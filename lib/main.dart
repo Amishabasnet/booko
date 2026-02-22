@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booko/app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // SET SYSTEM UI overlay style
+  // System UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -18,15 +18,13 @@ void main() async {
     ),
   );
 
-  // SHARED PREFERENCE OBJECT
-
-  // await HiveService().init();
-
+  // SharedPreferences instance
   final sharedPrefs = await SharedPreferences.getInstance();
+
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
-      child: App(),
+      child: const App(),
     ),
   );
 }

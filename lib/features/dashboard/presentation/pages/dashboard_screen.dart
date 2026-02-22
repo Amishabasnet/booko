@@ -1,9 +1,8 @@
 import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
 import 'package:booko/features/dashboard/presentation/pages/offers_screen.dart';
-import 'package:booko/features/dashboard/presentation/pages/profile_screen.dart'
-    as feature_profile;
-
-import 'package:booko/features/dashboard/presentation/pages/search_screen.dart';
+import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
+import 'package:booko/features/search/presentation/pages/search_screen.dart'
+    as search_feature;
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -18,9 +17,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = const [
     DashboardHome(),
-    SearchScreen(),
+    search_feature.SearchScreen(), // ✅ uses alias so no conflict
     OffersScreen(),
-    feature_profile.ProfileScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -28,16 +27,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.indigo[900],
+        backgroundColor: Colors.indigo,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         iconSize: isSmallScreen ? 20 : 24,
