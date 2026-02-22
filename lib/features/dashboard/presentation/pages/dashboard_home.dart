@@ -1,8 +1,10 @@
-import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
 import 'package:flutter/material.dart';
+
+import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
 
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
+
   static const List<Map<String, String>> nowShowing = [
     {
       'title': 'Predator: Badlands',
@@ -45,6 +47,7 @@ class DashboardHome extends StatelessWidget {
           'A musical fantasy journey exploring friendship, destiny and magic.',
     },
   ];
+
   static const List<Map<String, String>> comingSoon = [
     {
       'title': 'Avengers: Secret Wars',
@@ -71,6 +74,7 @@ class DashboardHome extends StatelessWidget {
           'Epic sci-fi saga continues with power, prophecy, and war on Arrakis.',
     },
   ];
+
   void _openMovieDetail(BuildContext context, Map<String, String> movie) {
     Navigator.push(
       context,
@@ -80,15 +84,32 @@ class DashboardHome extends StatelessWidget {
     );
   }
 
+  void _showComingSoonSnack(BuildContext context, String title) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('$title is coming soon! Stay tuned.'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: const Text(
             'Booko',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           backgroundColor: const Color(0xff003366),
           bottom: const TabBar(
@@ -104,8 +125,17 @@ class DashboardHome extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildMovieGrid(context, nowShowing),
-            _buildMovieGrid(context, comingSoon),
+            _buildMovieGrid(
+              context,
+              nowShowing,
+              onTap: (movie) => _openMovieDetail(context, movie),
+            ),
+            _buildMovieGrid(
+              context,
+              comingSoon,
+              onTap: (movie) =>
+                  _showComingSoonSnack(context, movie['title'] ?? 'Movie'),
+            ),
           ],
         ),
       ),
@@ -114,8 +144,9 @@ class DashboardHome extends StatelessWidget {
 
   Widget _buildMovieGrid(
     BuildContext context,
-    List<Map<String, String>> movies,
-  ) {
+    List<Map<String, String>> movies, {
+    required void Function(Map<String, String> movie) onTap,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
@@ -128,8 +159,9 @@ class DashboardHome extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           final movie = movies[index];
+
           return InkWell(
-            onTap: () => _openMovieDetail(context, movie),
+            onTap: () => onTap(movie),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
