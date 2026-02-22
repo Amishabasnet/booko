@@ -1,259 +1,329 @@
+import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'profile_screen.dart';
-
-class EditProfileScreen extends ConsumerStatefulWidget {
-  final ProfileData? initialProfile;
-
-  const EditProfileScreen({super.key, required this.initialProfile});
+class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key, ProfileData? initialProfile});
 
   @override
-  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
+class _EditProfileScreenState extends State<EditProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
 
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _emailCtrl;
-  late final TextEditingController _phoneCtrl;
+  final _fullNameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _dobCtrl = TextEditingController();
 
-  DateTime? _dob;
-  String? _gender;
-
-  bool _saving = false;
+  String _gender = 'Female';
 
   @override
   void initState() {
     super.initState();
-    final p = widget.initialProfile;
-
-    _nameCtrl = TextEditingController(text: p?.name ?? '');
-    _emailCtrl = TextEditingController(text: p?.email ?? '');
-    _phoneCtrl = TextEditingController(text: p?.phoneNumber ?? '');
-
-    _dob = p?.dob;
-    _gender = (p?.gender.isNotEmpty ?? false) ? p!.gender : null;
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
+    _tabController.dispose();
+    _fullNameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
+    _dobCtrl.dispose();
     super.dispose();
   }
 
-  String _formatDob(DateTime dob) {
-    final d = dob.day.toString().padLeft(2, '0');
-    final m = dob.month.toString().padLeft(2, '0');
-    final y = dob.year.toString();
-    return '$d/$m/$y';
-  }
-
   Future<void> _pickDob() async {
-    final now = DateTime.now();
-    final initial = _dob ?? DateTime(now.year - 18, now.month, now.day);
-
     final picked = await showDatePicker(
       context: context,
-      initialDate: initial,
+      initialDate: DateTime(2005, 4, 27),
       firstDate: DateTime(1900),
-      lastDate: now,
-      helpText: 'Select Date of Birth',
+      lastDate: DateTime.now(),
     );
+    if (picked == null) return;
 
-    if (picked != null) {
-      setState(() => _dob = picked);
-    }
-  }
+    final d = picked.day.toString().padLeft(2, '0');
+    final m = picked.month.toString().padLeft(2, '0');
+    final y = picked.year.toString();
 
-  Future<void> _save() async {
-    final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid) return;
-
-    if (_dob == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your Date of Birth')),
-      );
-      return;
-    }
-
-    if (_gender == null || _gender!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your gender')),
-      );
-      return;
-    }
-
-    setState(() => _saving = true);
-
-    try {
-      final old = widget.initialProfile;
-
-      final data = ProfileData(
-        name: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        phoneNumber: _phoneCtrl.text.trim(),
-        dob: _dob!,
-        gender: _gender!,
-        imagePath: old?.imagePath, // keep existing image path
-      );
-
-      await ref.read(profileProvider.notifier).saveProfile(data);
-
-      if (!mounted) return;
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    setState(() {
+      _dobCtrl.text = '$d-$m-$y';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     return Scaffold(
+      backgroundColor: const Color(0xffF3F4F7),
       appBar: AppBar(
-        title: Text(
-          widget.initialProfile == null ? 'Create Profile' : 'Edit Profile',
-        ),
+        backgroundColor: const Color(0xff1E2B4A),
         centerTitle: true,
+        title: const Text(
+          'Profile',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
       ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              TextFormField(
-                controller: _nameCtrl,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) {
-                  final value = (v ?? '').trim();
-                  if (value.isEmpty) return 'Name is required';
-                  if (value.length < 2) return 'Enter a valid name';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
+      body: Column(
+        children: [
+          // HEADER BAR (like your image)
+          Container(
+            width: double.infinity,
+            color: Colors.grey.shade300,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: const Text(
+              'PROFILE',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
 
-              TextFormField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) {
-                  final value = (v ?? '').trim();
-                  if (value.isEmpty) return 'Email is required';
-                  final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value);
-                  if (!ok) return 'Enter a valid email';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _phoneCtrl,
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) {
-                  final value = (v ?? '').trim();
-                  if (value.isEmpty) return 'Phone number is required';
-                  if (value.length < 7) return 'Enter a valid phone number';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              InkWell(
-                onTap: _pickDob,
-                borderRadius: BorderRadius.circular(12),
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Date of Birth',
-                    prefixIcon: Icon(Icons.cake_outlined),
-                    border: OutlineInputBorder(),
-                  ),
-                  child: Text(
-                    _dob == null ? 'Select DOB' : _formatDob(_dob!),
-                    style: TextStyle(
-                      color: _dob == null ? Colors.grey.shade600 : null,
-                      fontWeight: FontWeight.w600,
-                    ),
+          // Welcome block
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            decoration: BoxDecoration(
+              color: const Color(0xffF3F4F7),
+              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 34,
+                  backgroundColor: Colors.grey.shade300,
+                  child: const Icon(
+                    Icons.person_outline,
+                    color: Colors.black54,
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-
-              DropdownButtonFormField<String>(
-                value: _gender,
-                decoration: const InputDecoration(
-                  labelText: 'Gender',
-                  prefixIcon: Icon(Icons.wc_outlined),
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Male', child: Text('Male')),
-                  DropdownMenuItem(value: 'Female', child: Text('Female')),
-                  DropdownMenuItem(value: 'Other', child: Text('Other')),
-                  DropdownMenuItem(
-                    value: 'Prefer not to say',
-                    child: Text('Prefer not to say'),
-                  ),
-                ],
-                onChanged: (v) => setState(() => _gender = v),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Gender is required' : null,
-              ),
-
-              const SizedBox(height: 22),
-
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: colors.onPrimary,
-                  ),
-                  onPressed: _saving ? null : _save,
-                  child: _saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(
-                          widget.initialProfile == null
-                              ? 'Create Profile'
-                              : 'Save Changes',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'WELCOME BACK',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
                         ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'USER',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.edit, size: 18, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+
+          // Tabs
+          TabBar(
+            controller: _tabController,
+            indicatorColor: const Color(0xff1E2B4A),
+            labelColor: const Color(0xff1E2B4A),
+            unselectedLabelColor: Colors.black54,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+            tabs: const [
+              Tab(text: 'My Profile'),
+              Tab(text: 'My Tickets'),
             ],
           ),
+
+          // Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // ✅ My Profile FORM (only labels + input fields)
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _label('Full Name'),
+                      _field(
+                        controller: _fullNameCtrl,
+                        hint: 'Enter full name',
+                      ),
+                      const SizedBox(height: 12),
+
+                      _label('Email Address'),
+                      _field(controller: _emailCtrl, hint: 'Enter email'),
+                      const SizedBox(height: 12),
+
+                      _label('Phone Number'),
+                      _field(
+                        controller: _phoneCtrl,
+                        hint: 'Enter phone number',
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 12),
+
+                      _label('Date of Birth'),
+                      InkWell(
+                        onTap: _pickDob,
+                        child: AbsorbPointer(
+                          child: _field(
+                            controller: _dobCtrl,
+                            hint: 'Select DOB',
+                            suffix: const Icon(Icons.calendar_month_outlined),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      _label('Gender'),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _gender,
+                            isExpanded: true,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'Male',
+                                child: Text('Male'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Female',
+                                child: Text('Female'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Other',
+                                child: Text('Other'),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v == null) return;
+                              setState(() => _gender = v);
+                            },
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      Center(
+                        child: SizedBox(
+                          width: 140,
+                          height: 44,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade700,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              // later you can connect save logic
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Save pressed')),
+                              );
+                            },
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            // later you can connect delete logic
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Delete pressed')),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          label: const Text(
+                            'Delete your account',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _label(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w800)),
+    );
+  }
+
+  Widget _field({
+    required TextEditingController controller,
+    required String hint,
+    TextInputType? keyboardType,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hint,
+        suffixIcon: suffix,
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xff1E2B4A), width: 1.5),
         ),
       ),
     );
