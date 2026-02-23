@@ -22,6 +22,17 @@ class ProfileData {
   final DateTime dob;
   final String gender;
   final String? imagePath;
+final profileLocalDataSourceProvider = Provider<ProfileLocalDataSource>((ref) {
+  return ProfileLocalDataSourceImpl();
+});
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return ProfileRepositoryImpl(local: ref.read(profileLocalDataSourceProvider));
+});
+
+final getProfileUseCaseProvider = Provider<GetProfileUseCase>((ref) {
+  return GetProfileUseCase(ref.read(profileRepositoryProvider));
+});
 
   const ProfileData({
     required this.name,
@@ -90,6 +101,12 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     dob: m.dob,
     gender: m.gender,
     imagePath: m.imagePath,
+final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((
+  ref,
+) {
+  return ProfileNotifier(
+    getProfile: ref.read(getProfileUseCaseProvider),
+    saveProfile: ref.read(saveProfileUseCaseProvider),
   );
 
   ProfileHiveModel _toModel(ProfileData d) => ProfileHiveModel(

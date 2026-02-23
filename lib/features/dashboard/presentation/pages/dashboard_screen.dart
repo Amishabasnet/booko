@@ -17,7 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = const [
     DashboardHome(),
-    search_feature.SearchScreen(), // ✅ uses alias so no conflict
+    search_feature.SearchScreen(),
     OffersScreen(),
     ProfileScreen(),
   ];
@@ -32,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.indigo,
+        backgroundColor: Color(0xff003366),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         iconSize: isSmallScreen ? 20 : 24,

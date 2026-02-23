@@ -27,6 +27,7 @@ final searchHiveInitProvider = FutureProvider<void>((ref) async {
 });
 
 final movieBoxProvider = Provider<Box<MovieHiveModel>>((ref) {
+  ref.watch(searchHiveInitProvider); // ✅ forces init before Hive.box()
   return Hive.box<MovieHiveModel>(movieBoxName);
 });
 
@@ -102,8 +103,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final list = await _usecase(q);
-      state = state.copyWith(isLoading: false, results: list);
-    } catch (e) {
+      state = state.copyWith(isLoading: false, results: list, error: null);
+    } catch (_) {
       state = state.copyWith(
         isLoading: false,
         results: const [],
