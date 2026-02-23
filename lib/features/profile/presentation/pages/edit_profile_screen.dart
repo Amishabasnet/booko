@@ -1,331 +1,339 @@
-import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key, ProfileData? initialProfile});
+import 'package:booko/features/profile/presentation/state/profile_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+
+class EditProfileScreen extends ConsumerStatefulWidget {
+  final ProfileData? initialProfile;
+
+  const EditProfileScreen({super.key, required this.initialProfile});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+  final ImagePicker _picker = ImagePicker();
 
-  final _fullNameCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _dobCtrl = TextEditingController();
-
-  String _gender = 'Female';
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _dobCtrl;
+  String _gender = 'Other';
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    final p = widget.initialProfile;
+    _nameCtrl = TextEditingController(text: p?.name ?? '');
+    _emailCtrl = TextEditingController(text: p?.email ?? '');
+    _phoneCtrl = TextEditingController(text: p?.phoneNumber ?? '');
+    _dobCtrl = TextEditingController(
+      text: (p == null) ? '' : _formatDob(p.dob),
+    );
+    _gender = p?.gender ?? 'Other';
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _fullNameCtrl.dispose();
+    _nameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
     _dobCtrl.dispose();
     super.dispose();
   }
 
+  String _formatDob(DateTime dob) {
+    final d = dob.day.toString().padLeft(2, '0');
+    final m = dob.month.toString().padLeft(2, '0');
+    final y = dob.year.toString();
+    return '$d-$m-$y';
+  }
+
   Future<void> _pickDob() async {
+    final initial = widget.initialProfile?.dob ?? DateTime(2000, 1, 1);
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(2005, 4, 27),
+      initialDate: initial,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
     if (picked == null) return;
+    _dobCtrl.text = _formatDob(picked);
+    setState(() {});
+  }
 
-    final d = picked.day.toString().padLeft(2, '0');
-    final m = picked.month.toString().padLeft(2, '0');
-    final y = picked.year.toString();
+  ImageProvider _imageProvider(ProfileData? profile) {
+    if (profile?.imagePath != null && profile!.imagePath!.isNotEmpty) {
+      return FileImage(File(profile.imagePath!));
+    }
+    return const AssetImage('assets/images/default_avatar.png');
+    // Or:
+    // return const NetworkImage('https://i.pravatar.cc/200');
+  }
 
-    setState(() {
-      _dobCtrl.text = '$d-$m-$y';
-    });
+  Future<void> _pickPhoto(ProfileData? profile) async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Take a photo'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final img = await _picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+                  if (img != null && mounted) {
+                    await ref
+                        .read(profileProvider.notifier)
+                        .updateImage(img.path);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Choose from gallery'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final img = await _picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (img != null && mounted) {
+                    await ref
+                        .read(profileProvider.notifier)
+                        .updateImage(img.path);
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _save() async {
+    final currentImage = ref.read(profileProvider).profile?.imagePath;
+
+    // parse DOB
+    DateTime dob = widget.initialProfile?.dob ?? DateTime(2000, 1, 1);
+    if (_dobCtrl.text.trim().isNotEmpty) {
+      final parts = _dobCtrl.text.trim().split('-');
+      if (parts.length == 3) {
+        final dd = int.tryParse(parts[0]);
+        final mm = int.tryParse(parts[1]);
+        final yy = int.tryParse(parts[2]);
+        if (dd != null && mm != null && yy != null) {
+          dob = DateTime(yy, mm, dd);
+        }
+      }
+    }
+
+    final updated = ProfileData(
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      phoneNumber: _phoneCtrl.text.trim(),
+      dob: dob,
+      gender: _gender,
+      imagePath: currentImage,
+    );
+
+    await ref.read(profileProvider.notifier).saveProfile(updated);
+
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF3F4F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xff1E2B4A),
-        centerTitle: true,
-        title: const Text(
-          'Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: Column(
-        children: [
-          // HEADER BAR (like your image)
-          Container(
-            width: double.infinity,
-            color: Colors.grey.shade300,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: const Text(
-              'PROFILE',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
+    final theme = Theme.of(context);
+    final st = ref.watch(profileProvider);
+    final profile = st.profile;
 
-          // Welcome block
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            decoration: BoxDecoration(
-              color: const Color(0xffF3F4F7),
-              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Row(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.3,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: Text(
+          'Edit Profile',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: Colors.black,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Save',
+            icon: const Icon(Icons.check, color: Colors.green),
+            onPressed: _save,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        children: [
+          Center(
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 CircleAvatar(
-                  radius: 34,
-                  backgroundColor: Colors.grey.shade300,
-                  child: const Icon(
-                    Icons.person_outline,
-                    color: Colors.black54,
-                  ),
+                  radius: 42,
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: _imageProvider(profile),
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'WELCOME BACK',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                        ),
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: InkWell(
+                    onTap: () => _pickPhoto(profile),
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black12),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'USER',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
+                      child: const Icon(Icons.camera_alt_outlined, size: 16),
+                    ),
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.edit, size: 18, color: Colors.white),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 18),
 
-          // Tabs
-          TabBar(
-            controller: _tabController,
-            indicatorColor: const Color(0xff1E2B4A),
-            labelColor: const Color(0xff1E2B4A),
-            unselectedLabelColor: Colors.black54,
-            labelStyle: const TextStyle(fontWeight: FontWeight.w800),
-            tabs: const [
-              Tab(text: 'My Profile'),
-              Tab(text: 'My Tickets'),
-            ],
+          _LabelField(label: 'Name', controller: _nameCtrl, hint: 'Enter name'),
+          const SizedBox(height: 14),
+
+          _LabelField(
+            label: 'Email address',
+            controller: _emailCtrl,
+            hint: 'Enter email',
+            keyboardType: TextInputType.emailAddress,
           ),
+          const SizedBox(height: 14),
 
-          // Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // ✅ My Profile FORM (only labels + input fields)
-                SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _label('Full Name'),
-                      _field(
-                        controller: _fullNameCtrl,
-                        hint: 'Enter full name',
-                      ),
-                      const SizedBox(height: 12),
+          _LabelField(
+            label: 'Phone number',
+            controller: _phoneCtrl,
+            hint: 'Enter phone number',
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 14),
 
-                      _label('Email Address'),
-                      _field(controller: _emailCtrl, hint: 'Enter email'),
-                      const SizedBox(height: 12),
+          _LabelField(
+            label: 'Date of Birth',
+            controller: _dobCtrl,
+            hint: 'DD-MM-YYYY',
+            readOnly: true,
+            suffix: IconButton(
+              icon: const Icon(Icons.calendar_month_outlined),
+              onPressed: _pickDob,
+            ),
+          ),
+          const SizedBox(height: 14),
 
-                      _label('Phone Number'),
-                      _field(
-                        controller: _phoneCtrl,
-                        hint: 'Enter phone number',
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 12),
-
-                      _label('Date of Birth'),
-                      InkWell(
-                        onTap: _pickDob,
-                        child: AbsorbPointer(
-                          child: _field(
-                            controller: _dobCtrl,
-                            hint: 'Select DOB',
-                            suffix: const Icon(Icons.calendar_month_outlined),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      _label('Gender'),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _gender,
-                            isExpanded: true,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'Male',
-                                child: Text('Male'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Female',
-                                child: Text('Female'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Other',
-                                child: Text('Other'),
-                              ),
-                            ],
-                            onChanged: (v) {
-                              if (v == null) return;
-                              setState(() => _gender = v);
-                            },
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 22),
-
-                      Center(
-                        child: SizedBox(
-                          width: 140,
-                          height: 44,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green.shade700,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: () {
-                              // later you can connect save logic
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Save pressed')),
-                              );
-                            },
-                            child: const Text(
-                              'Save',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            // later you can connect delete logic
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Delete pressed')),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                          ),
-                          label: const Text(
-                            'Delete your account',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          Text(
+            'Gender',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.transparent),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _gender,
+                isExpanded: true,
+                items: const [
+                  DropdownMenuItem(value: 'Male', child: Text('Male')),
+                  DropdownMenuItem(value: 'Female', child: Text('Female')),
+                  DropdownMenuItem(value: 'Other', child: Text('Other')),
+                ],
+                onChanged: (v) {
+                  if (v == null) return;
+                  setState(() => _gender = v);
+                },
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w800)),
-    );
-  }
+class _LabelField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType? keyboardType;
+  final bool readOnly;
+  final Widget? suffix;
 
-  Widget _field({
-    required TextEditingController controller,
-    required String hint,
-    TextInputType? keyboardType,
-    Widget? suffix,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        hintText: hint,
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
+  const _LabelField({
+    required this.label,
+    required this.controller,
+    required this.hint,
+    this.keyboardType,
+    this.readOnly = false,
+    this.suffix,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          readOnly: readOnly,
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: suffix,
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xff1E2B4A), width: 1.5),
-        ),
-      ),
+      ],
     );
   }
 }
