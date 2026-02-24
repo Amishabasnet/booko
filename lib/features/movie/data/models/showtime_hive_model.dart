@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 part 'showtime_hive_model.g.dart';
 
 @HiveType(typeId: 21)
-class ShowtimeHiveModel extends HiveObject {
+class ShowtimeHiveModel {
   @HiveField(0)
   final String id;
 
@@ -11,23 +11,23 @@ class ShowtimeHiveModel extends HiveObject {
   final String movieId;
 
   @HiveField(2)
-  final String cinema; // e.g. "Civil Mall"
+  final String cinema;
 
   @HiveField(3)
-  final String language; // e.g. "Nepali"
+  final String language;
 
   @HiveField(4)
-  final DateTime date; // date only
+  final DateTime startTime;
 
   @HiveField(5)
-  final String time; // e.g. "12:00 PM"
+  final int dayIndex; // 0=today, 1=tomorrow
 
-  ShowtimeHiveModel({
+  const ShowtimeHiveModel({
     required this.id,
     required this.movieId,
     required this.cinema,
     required this.language,
-    required this.date,
-    required this.time,
+    required this.startTime,
+    required this.dayIndex,
   });
 }

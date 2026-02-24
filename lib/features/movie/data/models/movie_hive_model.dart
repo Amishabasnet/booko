@@ -16,14 +16,22 @@ class MovieHiveModel extends HiveObject {
   @HiveField(3)
   final String language;
 
+  @HiveField(4)
+  final String duration;
+
+  @HiveField(5)
+  final String description;
+
+  @HiveField(6)
+  final bool isComingSoon;
+
   MovieHiveModel({
     required this.id,
     required this.title,
     required this.posterPath,
     required this.language,
+    required this.duration,
+    required this.description,
+    required this.isComingSoon,
   });
-
-  get status => null;
-
-  get duration => null;
 }

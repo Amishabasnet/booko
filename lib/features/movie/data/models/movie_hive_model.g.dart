@@ -1,47 +1,50 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'showtime_hive_model.dart';
+part of 'movie_hive_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ShowtimeHiveModelAdapter extends TypeAdapter<ShowtimeHiveModel> {
+class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
   @override
-  final int typeId = 21;
+  final int typeId = 20;
 
   @override
-  ShowtimeHiveModel read(BinaryReader reader) {
+  MovieHiveModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ShowtimeHiveModel(
+    return MovieHiveModel(
       id: fields[0] as String,
-      movieId: fields[1] as String,
-      cinema: fields[2] as String,
+      title: fields[1] as String,
+      posterPath: fields[2] as String,
       language: fields[3] as String,
-      startTime: fields[4] as DateTime,
-      dayIndex: fields[5] as int,
+      duration: fields[4] as String,
+      description: fields[5] as String,
+      isComingSoon: fields[6] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, ShowtimeHiveModel obj) {
+  void write(BinaryWriter writer, MovieHiveModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.movieId)
+      ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.cinema)
+      ..write(obj.posterPath)
       ..writeByte(3)
       ..write(obj.language)
       ..writeByte(4)
-      ..write(obj.startTime)
+      ..write(obj.duration)
       ..writeByte(5)
-      ..write(obj.dayIndex);
+      ..write(obj.description)
+      ..writeByte(6)
+      ..write(obj.isComingSoon);
   }
 
   @override
@@ -50,7 +53,7 @@ class ShowtimeHiveModelAdapter extends TypeAdapter<ShowtimeHiveModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ShowtimeHiveModelAdapter &&
+      other is MovieHiveModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

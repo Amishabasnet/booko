@@ -19,7 +19,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     DashboardHome(),
     search_feature.SearchScreen(),
     OffersScreen(),
-    ProfileScreen(),
+    // ProfileScreen(),
   ];
 
   @override

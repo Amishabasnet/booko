@@ -21,16 +21,13 @@ class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
       title: fields[1] as String,
       posterPath: fields[2] as String,
       language: fields[3] as String,
-      duration: fields[4] as String,
-      description: fields[5] as String,
-      status: fields[6] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, MovieHiveModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,13 +35,7 @@ class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
       ..writeByte(2)
       ..write(obj.posterPath)
       ..writeByte(3)
-      ..write(obj.language)
-      ..writeByte(4)
-      ..write(obj.duration)
-      ..writeByte(5)
-      ..write(obj.description)
-      ..writeByte(6)
-      ..write(obj.status);
+      ..write(obj.language);
   }
 
   @override
