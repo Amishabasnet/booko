@@ -11,7 +11,7 @@ class MovieHiveModel extends HiveObject {
   final String title;
 
   @HiveField(2)
-  final String posterPath; // local asset path OR local file path
+  final String posterPath;
 
   @HiveField(3)
   final String language;
@@ -22,4 +22,8 @@ class MovieHiveModel extends HiveObject {
     required this.posterPath,
     required this.language,
   });
+
+  get status => null;
+
+  get duration => null;
 }

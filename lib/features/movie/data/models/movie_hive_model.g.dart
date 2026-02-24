@@ -1,59 +1,50 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'movie_model.dart';
+part of 'movie_hive_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class MovieModelAdapter extends TypeAdapter<MovieModel> {
+class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
   @override
-  final int typeId = 11;
+  final int typeId = 20;
 
   @override
-  MovieModel read(BinaryReader reader) {
+  MovieHiveModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return MovieModel(
+    return MovieHiveModel(
       id: fields[0] as String,
       title: fields[1] as String,
-      posterAsset: fields[2] as String,
-      genre: fields[3] as String,
-      durationMin: fields[4] as int,
-      language: fields[5] as String,
-      releaseDate: fields[6] as DateTime,
-      director: fields[7] as String,
-      cast: (fields[8] as List).cast<String>(),
-      synopsis: fields[9] as String,
+      posterPath: fields[2] as String,
+      language: fields[3] as String,
+      duration: fields[4] as String,
+      description: fields[5] as String,
+      isComingSoon: fields[6] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, MovieModel obj) {
+  void write(BinaryWriter writer, MovieHiveModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.posterAsset)
+      ..write(obj.posterPath)
       ..writeByte(3)
-      ..write(obj.genre)
-      ..writeByte(4)
-      ..write(obj.durationMin)
-      ..writeByte(5)
       ..write(obj.language)
+      ..writeByte(4)
+      ..write(obj.duration)
+      ..writeByte(5)
+      ..write(obj.description)
       ..writeByte(6)
-      ..write(obj.releaseDate)
-      ..writeByte(7)
-      ..write(obj.director)
-      ..writeByte(8)
-      ..write(obj.cast)
-      ..writeByte(9)
-      ..write(obj.synopsis);
+      ..write(obj.isComingSoon);
   }
 
   @override
@@ -62,7 +53,7 @@ class MovieModelAdapter extends TypeAdapter<MovieModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MovieModelAdapter &&
+      other is MovieHiveModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

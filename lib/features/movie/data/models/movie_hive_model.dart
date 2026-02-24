@@ -1,16 +1,31 @@
-import 'showtime.dart';
+import 'package:hive/hive.dart';
 
-class Movie {
+part 'movie_hive_model.g.dart';
+
+@HiveType(typeId: 20)
+class MovieHiveModel extends HiveObject {
+  @HiveField(0)
   final String id;
-  final String title;
-  final String posterPath;
-  final String language;
-  final String duration;
-  final String description;
-  final bool isComingSoon;
-  final List<Showtime> showtimes;
 
-  const Movie({
+  @HiveField(1)
+  final String title;
+
+  @HiveField(2)
+  final String posterPath;
+
+  @HiveField(3)
+  final String language;
+
+  @HiveField(4)
+  final String duration;
+
+  @HiveField(5)
+  final String description;
+
+  @HiveField(6)
+  final bool isComingSoon;
+
+  MovieHiveModel({
     required this.id,
     required this.title,
     required this.posterPath,
@@ -18,8 +33,5 @@ class Movie {
     required this.duration,
     required this.description,
     required this.isComingSoon,
-    required this.showtimes,
   });
-
-  String? get imageUrl => null;
 }

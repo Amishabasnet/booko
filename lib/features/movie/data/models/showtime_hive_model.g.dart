@@ -1,33 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'showtime_model.dart';
+part of 'showtime_hive_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ShowtimeModelAdapter extends TypeAdapter<ShowtimeModel> {
+class ShowtimeHiveModelAdapter extends TypeAdapter<ShowtimeHiveModel> {
   @override
-  final int typeId = 12;
+  final int typeId = 21;
 
   @override
-  ShowtimeModel read(BinaryReader reader) {
+  ShowtimeHiveModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ShowtimeModel(
+    return ShowtimeHiveModel(
       id: fields[0] as String,
       movieId: fields[1] as String,
-      date: fields[2] as DateTime,
-      cinema: fields[3] as String,
-      language: fields[4] as String,
-      timeLabel: fields[5] as String,
+      cinema: fields[2] as String,
+      language: fields[3] as String,
+      startTime: fields[4] as DateTime,
+      dayIndex: fields[5] as int,
     );
   }
 
   @override
-  void write(BinaryWriter writer, ShowtimeModel obj) {
+  void write(BinaryWriter writer, ShowtimeHiveModel obj) {
     writer
       ..writeByte(6)
       ..writeByte(0)
@@ -35,13 +35,13 @@ class ShowtimeModelAdapter extends TypeAdapter<ShowtimeModel> {
       ..writeByte(1)
       ..write(obj.movieId)
       ..writeByte(2)
-      ..write(obj.date)
-      ..writeByte(3)
       ..write(obj.cinema)
-      ..writeByte(4)
+      ..writeByte(3)
       ..write(obj.language)
+      ..writeByte(4)
+      ..write(obj.startTime)
       ..writeByte(5)
-      ..write(obj.timeLabel);
+      ..write(obj.dayIndex);
   }
 
   @override
@@ -50,7 +50,7 @@ class ShowtimeModelAdapter extends TypeAdapter<ShowtimeModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ShowtimeModelAdapter &&
+      other is ShowtimeHiveModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

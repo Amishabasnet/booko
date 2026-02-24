@@ -1,9 +1,9 @@
 import '../entities/movie.dart';
 import '../repositories/movie_repository.dart';
 
-class GetMovieById {
+class GetMovie {
   final MovieRepository repo;
-  GetMovieById(this.repo);
+  GetMovie(this.repo);
 
-  Future<Movie?> call(String id) => repo.getMovieById(id);
+  Future<Movie?> call(String id) => repo.getMovie(id);
 }

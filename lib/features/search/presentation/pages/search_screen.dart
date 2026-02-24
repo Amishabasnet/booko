@@ -62,6 +62,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Expanded(
             child: st.isLoading
                 ? const Center(child: CircularProgressIndicator())
+                : (st.error != null)
+                ? Center(child: Text(st.error!))
                 : ListView.separated(
                     itemCount: st.results.length,
                     separatorBuilder: (_, __) => Padding(

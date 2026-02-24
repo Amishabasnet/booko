@@ -12,6 +12,7 @@ class MovieRepositoryImpl implements MovieRepository {
     title: m.title,
     posterPath: m.posterPath,
     language: m.language,
+    posterUrl: '',
   );
 
   @override
