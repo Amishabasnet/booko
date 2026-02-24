@@ -9,5 +9,6 @@ class Movie {
     required this.title,
     required this.posterPath,
     required this.language,
+    required String posterUrl,
   });
 }
