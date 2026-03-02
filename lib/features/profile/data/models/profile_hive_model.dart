@@ -2,16 +2,16 @@ import 'package:hive/hive.dart';
 
 part 'profile_hive_model.g.dart';
 
-@HiveType(typeId: 10)
+@HiveType(typeId: 21)
 class ProfileHiveModel extends HiveObject {
   @HiveField(0)
-  final String name;
+  final String fullName;
 
   @HiveField(1)
   final String email;
 
   @HiveField(2)
-  final String phoneNumber;
+  final String phone;
 
   @HiveField(3)
   final DateTime dob;
@@ -19,15 +19,11 @@ class ProfileHiveModel extends HiveObject {
   @HiveField(4)
   final String gender;
 
-  @HiveField(5)
-  final String? imagePath;
-
   ProfileHiveModel({
-    required this.name,
+    required this.fullName,
     required this.email,
-    required this.phoneNumber,
+    required this.phone,
     required this.dob,
     required this.gender,
-    this.imagePath,
   });
 }

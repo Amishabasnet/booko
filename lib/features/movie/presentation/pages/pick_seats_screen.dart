@@ -10,7 +10,6 @@ class PickSeatsScreen extends StatefulWidget {
   final String time;
   final int seatPrice;
 import 'package:flutter/material.dart';
-
 import 'booking_confirmation_screen.dart';
 
 class PickSeatsScreen extends StatefulWidget {
@@ -120,12 +119,14 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
       appBar: AppBar(
         title: const Text(
           'PICK YOUR SEATS',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
         centerTitle: true,
+        elevation: 0,
       ),
       body: Column(
         children: [
+          const SizedBox(height: 24),
           // ✅ Screen direction indicator
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
@@ -215,8 +216,10 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
             ),
           ),
-          const SizedBox(height: 14),
-
+          const SizedBox(
+            height: 40,
+          ), // Added space between screen indicator and seat grid
+          // Center the seat grid
           Expanded(
             child: Center(
               child: SizedBox(
@@ -270,6 +273,7 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
             ),
           ),
 
+          // Move the legends below the seat grid
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
             child: Row(
@@ -284,6 +288,7 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
             ),
           ),
 
+          // Make the 'Next' button more visible and larger
           Container(
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
             color: Colors.indigo.shade900,
@@ -351,7 +356,7 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
                 ),
                 const SizedBox(width: 10),
                 SizedBox(
-                  height: 40,
+                  height: 50, // Increased height for visibility
                   child: ElevatedButton(
                     onPressed: _selectedSeats.isEmpty
                         ? null
@@ -366,14 +371,17 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
                                   time: widget.time,
                                   dayText: dayText,
                                   seats: _selectedSeats.toList(),
-                                  totalPrice: _totalPrice,
+                                  totalPrice: _totalPrice, eventDate: '',
                                 ),
                               ),
                             );
                           },
                     child: const Text(
                       'NEXT',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16, // Increased font size
+                      ),
                     ),
                   ),
                 ),
@@ -478,19 +486,22 @@ class _Legend extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 10,
-          height: 10,
+          width: 12, // Slightly bigger dot for better visibility
+          height: 12,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8), // Adjusted spacing between dot and text
         Text(
           label,
           style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
           text,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+          style: const TextStyle(
+            fontSize: 14, // Increased font size
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ],
     );

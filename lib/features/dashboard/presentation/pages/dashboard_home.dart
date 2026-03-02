@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+class DashboardHome extends StatelessWidget {
+  const DashboardHome({super.key});
+
+  final List<Map<String, String>> nowShowing = const [
 import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
 
 class DashboardHome extends StatelessWidget {
@@ -48,6 +52,7 @@ class DashboardHome extends StatelessWidget {
     },
   ];
 
+  final List<Map<String, String>> comingSoon = const [
   static const List<Map<String, String>> comingSoon = [
     {
       'title': 'Avengers: Secret Wars',
@@ -79,6 +84,14 @@ class DashboardHome extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
+        builder: (_) => MovieDetailScreen(
+          movieId: movie['title']!, // Use movie title or unique id as movieId
+          movie: movie, // Pass entire movie data to MovieDetailScreen
+        ),
+      ),
+    );
+  }
+
         builder: (_) => MovieDetailScreen(movie: movie, movieId: ''),
       ),
     );
@@ -102,6 +115,26 @@ class DashboardHome extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          title: const Text(
+            'Booko',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xff003366),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: 'NOW SHOWING'),
+              Tab(text: 'COMING SOON'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            buildMovieGrid(context, nowShowing),
+            buildMovieGrid(context, comingSoon),
           centerTitle: true,
           title: const Text(
             'Booko',
@@ -142,8 +175,10 @@ class DashboardHome extends StatelessWidget {
     );
   }
 
-  Widget _buildMovieGrid(
+  Widget buildMovieGrid(
     BuildContext context,
+    List<Map<String, String>> movies,
+  ) {
     List<Map<String, String>> movies, {
     required void Function(Map<String, String> movie) onTap,
   }) {
@@ -161,6 +196,7 @@ class DashboardHome extends StatelessWidget {
           final movie = movies[index];
 
           return InkWell(
+            onTap: () => _openMovieDetail(context, movie),
             onTap: () => onTap(movie),
             borderRadius: BorderRadius.circular(12),
             child: Column(
@@ -169,30 +205,22 @@ class DashboardHome extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset(
+                      movie['image']!,
                       movie['image'] ?? '',
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.black12,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.broken_image_outlined,
-                          size: 40,
-                        ),
-                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
+                  movie['title']!,
                   movie['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.bold),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
                 Text(
+                  '${movie['language']} | ${movie['duration']}',
                   '${movie['language'] ?? ''} | ${movie['duration'] ?? ''}',
                   style: const TextStyle(fontSize: 12),
                 ),

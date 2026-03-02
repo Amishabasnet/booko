@@ -83,4 +83,14 @@ class UserSessionService {
   String? getUserGender() {
     return _prefs.getString(_keyUserGender);
   }
+
+  Future<dynamic> getName() async {}
+
+  Future<dynamic> getEmail() async {}
+
+  Future<dynamic> getPhoneNumber() async {}
+
+  Future<dynamic> getDob() async {}
+
+  Future<dynamic> getGender() async {}
 }

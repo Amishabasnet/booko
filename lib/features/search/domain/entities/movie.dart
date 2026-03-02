@@ -1,14 +1,15 @@
 class Movie {
   final String id;
   final String title;
-  final String posterPath;
   final String language;
+  final List<String> genres;
+  final String posterUrl;
 
-  const Movie({
+  Movie({
     required this.id,
     required this.title,
-    required this.posterPath,
     required this.language,
-    required String posterUrl,
+    required this.genres,
+    required this.posterUrl,
   });
 }
