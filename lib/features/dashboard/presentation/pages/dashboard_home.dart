@@ -1,10 +1,15 @@
-import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
 import 'package:flutter/material.dart';
 
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
 
   final List<Map<String, String>> nowShowing = const [
+import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
+
+class DashboardHome extends StatelessWidget {
+  const DashboardHome({super.key});
+
+  static const List<Map<String, String>> nowShowing = [
     {
       'title': 'Predator: Badlands',
       'image': 'assets/images/predator-badlands.jpg',
@@ -48,6 +53,7 @@ class DashboardHome extends StatelessWidget {
   ];
 
   final List<Map<String, String>> comingSoon = const [
+  static const List<Map<String, String>> comingSoon = [
     {
       'title': 'Avengers: Secret Wars',
       'image': 'assets/images/avengers.jpg',
@@ -86,6 +92,23 @@ class DashboardHome extends StatelessWidget {
     );
   }
 
+        builder: (_) => MovieDetailScreen(movie: movie, movieId: ''),
+      ),
+    );
+  }
+
+  void _showComingSoonSnack(BuildContext context, String title) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('$title is coming soon! Stay tuned.'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -112,6 +135,40 @@ class DashboardHome extends StatelessWidget {
           children: [
             buildMovieGrid(context, nowShowing),
             buildMovieGrid(context, comingSoon),
+          centerTitle: true,
+          title: const Text(
+            'Booko',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xff003366),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: 'NOW SHOWING'),
+              Tab(text: 'COMING SOON'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildMovieGrid(
+              context,
+              nowShowing,
+              onTap: (movie) => _openMovieDetail(context, movie),
+            ),
+            _buildMovieGrid(
+              context,
+              comingSoon,
+              onTap: (movie) =>
+                  _showComingSoonSnack(context, movie['title'] ?? 'Movie'),
+            ),
           ],
         ),
       ),
@@ -122,6 +179,9 @@ class DashboardHome extends StatelessWidget {
     BuildContext context,
     List<Map<String, String>> movies,
   ) {
+    List<Map<String, String>> movies, {
+    required void Function(Map<String, String> movie) onTap,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
@@ -137,6 +197,7 @@ class DashboardHome extends StatelessWidget {
 
           return InkWell(
             onTap: () => _openMovieDetail(context, movie),
+            onTap: () => onTap(movie),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
@@ -145,6 +206,7 @@ class DashboardHome extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset(
                       movie['image']!,
+                      movie['image'] ?? '',
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
@@ -153,11 +215,13 @@ class DashboardHome extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   movie['title']!,
+                  movie['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '${movie['language']} | ${movie['duration']}',
+                  '${movie['language'] ?? ''} | ${movie['duration'] ?? ''}',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
