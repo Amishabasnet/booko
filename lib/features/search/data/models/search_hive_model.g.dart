@@ -1,41 +1,44 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'movie_hive_model.dart';
+part of 'search_hive_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
+class SearchHiveModelAdapter extends TypeAdapter<SearchHiveModel> {
   @override
-  final int typeId = 20;
+  final int typeId = 1;
 
   @override
-  MovieHiveModel read(BinaryReader reader) {
+  SearchHiveModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return MovieHiveModel(
+    return SearchHiveModel(
       id: fields[0] as String,
       title: fields[1] as String,
-      posterPath: fields[2] as String,
-      language: fields[3] as String,
+      language: fields[2] as String,
+      genres: (fields[3] as List).cast<String>(),
+      posterUrl: fields[4] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, MovieHiveModel obj) {
+  void write(BinaryWriter writer, SearchHiveModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.posterPath)
+      ..write(obj.language)
       ..writeByte(3)
-      ..write(obj.language);
+      ..write(obj.genres)
+      ..writeByte(4)
+      ..write(obj.posterUrl);
   }
 
   @override
@@ -44,7 +47,7 @@ class MovieHiveModelAdapter extends TypeAdapter<MovieHiveModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MovieHiveModelAdapter &&
+      other is SearchHiveModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

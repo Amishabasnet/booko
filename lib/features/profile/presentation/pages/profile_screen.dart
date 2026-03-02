@@ -1,8 +1,9 @@
-import 'dart:io';
-
-import 'package:booko/features/profile/presentation/state/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../state/profile_controller.dart';
+import '../widgets/profile_field.dart';
+import '../widgets/profile_header_card.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -12,98 +13,165 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tab;
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(profileProvider);
-    final profile = state.profile;
+    final st = ref.watch(profileControllerProvider);
 
-    // ✅ Check if profile data is null or empty
-    if (profile == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Profile'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                // Navigate to edit profile screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => EditProfileScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.account_circle, size: 100), // Placeholder icon
-              const SizedBox(height: 10),
-              const Text('No profile found'),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  // Navigate to edit profile screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => EditProfileScreen()),
-                  );
-                },
-                child: const Text('Create Profile'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // ✅ Render profile data when available
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // Navigate to edit profile screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => EditProfileScreen()),
-              );
-            },
-          ),
-        ],
+        centerTitle: true,
+        backgroundColor: const Color(0xff111a2c),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Avatar display, check if image path exists
-            CircleAvatar(
-              radius: 40,
-              backgroundImage:
-                  profile.imagePath != null && profile.imagePath!.isNotEmpty
-                  ? FileImage(File(profile.imagePath!))
-                  : const NetworkImage('https://via.placeholder.com/150'),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+
+          // ✅ Responsive breakpoints
+          final isMobile = width < 600;
+          final isTablet = width >= 600 && width < 1024;
+
+          final horizontalPadding = isMobile
+              ? 16.0
+              : isTablet
+              ? 24.0
+              : 32.0;
+          final contentMaxWidth = isMobile ? double.infinity : 820.0;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: contentMaxWidth),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 14),
+
+                    // Header Card
+                    ProfileHeaderCard(
+                      name: st.isLoading
+                          ? '—'
+                          : (st.fullName.isNotEmpty ? st.fullName : '—'),
+                      onEdit: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const EditProfileScreen(),
+                          ),
+                        ).then((_) {
+                          // ✅ reload after returning from edit screen
+                          ref.read(profileControllerProvider.notifier).load();
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    TabBar(
+                      controller: _tab,
+                      indicatorColor: const Color(0xff111a2c),
+                      labelColor: const Color(0xff111a2c),
+                      unselectedLabelColor: Colors.black54,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      tabs: const [
+                        Tab(text: 'My Profile'),
+                        Tab(text: 'My Tickets'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tab,
+                        children: [
+                          // ✅ Scrollable for small screens
+                          SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: st.isLoading
+                                  ? const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 28),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : (st.error != null)
+                                  ? Center(child: Text(st.error!))
+                                  : Container(
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xfff2f3f6),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ProfileField(
+                                            label: 'Full Name:',
+                                            value: st.fullName.isNotEmpty
+                                                ? st.fullName
+                                                : '—',
+                                          ),
+                                          ProfileField(
+                                            label: 'Mobile No:',
+                                            value: st.phone.isNotEmpty
+                                                ? st.phone
+                                                : '—',
+                                          ),
+                                          ProfileField(
+                                            label: 'Email Address:',
+                                            value: st.email.isNotEmpty
+                                                ? st.email
+                                                : '—',
+                                          ),
+                                          ProfileField(
+                                            label: 'Date of Birth:',
+                                            value: st.dob.isNotEmpty
+                                                ? st.dob
+                                                : '—',
+                                          ),
+                                          ProfileField(
+                                            label: 'Gender:',
+                                            value: st.gender.isNotEmpty
+                                                ? st.gender
+                                                : '—',
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                          ),
+
+                          const Center(child: Text('My Tickets (Coming Soon)')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              profile.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(profile.email),
-            const SizedBox(height: 10),
-            Text('Phone: ${profile.phoneNumber}'),
-            const SizedBox(height: 10),
-            Text('DOB: ${profile.dob.toLocal()}'),
-            const SizedBox(height: 10),
-            Text('Gender: ${profile.gender}'),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -1,13 +1,10 @@
 import '../entities/movie.dart';
-import '../repositories/movie_repository.dart';
+import '../repositories/search_repository.dart';
 
 class SearchMovies {
-  final MovieRepository repo;
-  const SearchMovies(this.repo);
+  final SearchRepository repository;
 
-  Future<List<Movie>> call(String query) async {
-    final q = query.trim();
-    if (q.isEmpty) return repo.getAllMovies();
-    return repo.searchMovies(q);
-  }
+  SearchMovies(this.repository);
+
+  Future<List<Movie>> call(String query) => repository.search(query);
 }

@@ -1,62 +1,52 @@
-class ProfileData {
-  final String name;
-  final String email;
-  final String phoneNumber;
-  final DateTime dob;
-  final String gender;
-  final String? imagePath;
-
-  const ProfileData({
-    required this.name,
-    required this.email,
-    required this.phoneNumber,
-    required this.dob,
-    required this.gender,
-    this.imagePath,
-  });
-
-  ProfileData copyWith({
-    String? name,
-    String? email,
-    String? phoneNumber,
-    DateTime? dob,
-    String? gender,
-    String? imagePath,
-  }) {
-    return ProfileData(
-      name: name ?? this.name,
-      email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      dob: dob ?? this.dob,
-      gender: gender ?? this.gender,
-      imagePath: imagePath ?? this.imagePath,
-    );
-  }
-}
-
 class ProfileState {
   final bool isLoading;
-  final ProfileData? profile;
   final String? error;
+
+  final String fullName;
+  final String email;
+  final String phone;
+  final String dob;
+  final String gender;
 
   const ProfileState({
     required this.isLoading,
-    required this.profile,
-    this.error,
+    required this.error,
+    required this.fullName,
+    required this.email,
+    required this.phone,
+    required this.dob,
+    required this.gender,
   });
 
-  factory ProfileState.initial() =>
-      const ProfileState(isLoading: true, profile: null);
+  factory ProfileState.initial() => const ProfileState(
+    isLoading: true,
+    error: null,
+    fullName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    gender: '',
+  );
+
+  get profile => null;
 
   ProfileState copyWith({
     bool? isLoading,
-    ProfileData? profile,
     String? error,
+    String? fullName,
+    String? email,
+    String? phone,
+    String? dob,
+    String? gender,
   }) {
     return ProfileState(
       isLoading: isLoading ?? this.isLoading,
-      profile: profile ?? this.profile,
       error: error,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      dob: dob ?? this.dob,
+      gender: gender ?? this.gender,
     );
   }
 }

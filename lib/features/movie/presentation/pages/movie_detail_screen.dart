@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../domain/entities/movie.dart';
-import '../providers/movie_providers.dart';
 import 'pick_seats_screen.dart';
 
 class MovieDetailScreen extends ConsumerStatefulWidget {
   final String movieId;
+  final Map<String, String> movie;
 
-  const MovieDetailScreen({super.key, required this.movieId, required Map<dynamic, dynamic> movie});
+  const MovieDetailScreen({
+    super.key,
+    required this.movieId,
+    required this.movie,
+  });
 
   @override
   ConsumerState<MovieDetailScreen> createState() => _MovieDetailScreenState();
@@ -22,6 +24,26 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
   String _cinema = 'ALL';
   String _language = 'ALL';
 
+  // Showtimes data structure
+  final Map<String, List<Map<String, String>>> _showtimes = {
+    'Bhaktapur': [
+      {'time': '12:00 PM', 'cinema': 'Bhaktapur', 'language': 'Nepali'},
+      {'time': '6:30 PM', 'cinema': 'Bhaktapur', 'language': 'Nepali'},
+    ],
+    'Civil Mall': [
+      {'time': '11:30 AM', 'cinema': 'Civil Mall', 'language': 'Nepali'},
+      {'time': '5:45 PM', 'cinema': 'Civil Mall', 'language': 'Nepali'},
+    ],
+    'Rising Mall': [
+      {'time': '2:30 PM', 'cinema': 'Rising Mall', 'language': 'Nepali'},
+      {'time': '8:00 PM', 'cinema': 'Rising Mall', 'language': 'English'},
+    ],
+    'Chhaya Center': [
+      {'time': '12:00 PM', 'cinema': 'Chhaya Center', 'language': 'English'},
+      {'time': '6:30 PM', 'cinema': 'Chhaya Center', 'language': 'English'},
+    ],
+  };
+
   @override
   void initState() {
     super.initState();
@@ -34,312 +56,205 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     super.dispose();
   }
 
-  void _goPickSeats({
-    required Movie movie,
-    required String cinema,
-    required String time,
-  }) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PickSeatsScreen(
-          movieTitle: movie.title,
-          movieId: movie.id,
-          cinema: cinema,
-          time: time,
-          dayIndex: _dayIndex,
+  @override
+  Widget build(BuildContext context) {
+    final movie = widget.movie;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          movie['title'] ?? 'Movie Details',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
+        centerTitle: true,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Showtimes'),
+            Tab(text: 'Movie Details'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Showtimes Tab (Redesigned with cinema filter)
+          ListView(
+            padding: const EdgeInsets.all(12),
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 8,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    movie['image']!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.black12,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.broken_image_outlined, size: 40),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                movie['title']!,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(movie['description']!),
+              const SizedBox(height: 10),
+              Text('Duration: ${movie['duration']}'),
+              Text('Language: ${movie['language']}'),
+
+              const SizedBox(height: 14),
+              // Cinema selection section
+              const Text(
+                'Select Cinemas',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children:
+                    [
+                      'ALL',
+                      'Bhaktapur',
+                      'Civil Mall',
+                      'Rising Mall',
+                      'Chhaya Center',
+                    ].map((cinema) {
+                      return _ChipButton(
+                        text: cinema,
+                        isActive: _cinema == cinema,
+                        onTap: () {
+                          setState(() {
+                            _cinema = cinema;
+                          });
+                        },
+                      );
+                    }).toList(),
+              ),
+
+              const SizedBox(height: 14),
+              // Showtime section for filtered cinema
+              const Text(
+                'Showtimes',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+
+              // Filtering showtimes based on selected cinema
+              _buildShowtimesByCinema(),
+            ],
+          ),
+
+          // Movie Details Tab
+          ListView(
+            padding: const EdgeInsets.all(14),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade700,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _DetailRow(
+                      icon: Icons.grid_view_rounded,
+                      title: 'GENRE',
+                      value: 'DRAMA',
+                    ),
+                    const SizedBox(height: 10),
+                    _DetailRow(
+                      icon: Icons.access_time_rounded,
+                      title: 'DURATION',
+                      value: '${movie['duration']} | ${movie['language']}',
+                    ),
+                    const SizedBox(height: 10),
+                    _DetailRow(
+                      icon: Icons.article_outlined,
+                      title: 'SYNOPSIS',
+                      value: movie['description']!,
+                    ),
+                    const SizedBox(height: 10),
+                    _DetailRow(
+                      icon: Icons.date_range_rounded,
+                      title: 'RELEASE DATE',
+                      value: '2023-11-15',
+                    ),
+                    const SizedBox(height: 10),
+                    _DetailRow(
+                      icon: Icons.person_rounded,
+                      title: 'DIRECTOR',
+                      value: 'Deepak Prasad Acharya',
+                    ),
+                    const SizedBox(height: 10),
+                    _DetailRow(
+                      icon: Icons.people_rounded,
+                      title: 'LEAD CAST',
+                      value: 'Krishna Shrestha, Puja Gurung, Laxmi Adhikari',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final hiveInit = ref.watch(movieHiveInitProvider);
+  // Build the showtimes based on selected cinema
+  Widget _buildShowtimesByCinema() {
+    // Fetch showtimes for the selected cinema
+    final showtimes = _cinema == 'ALL'
+        ? _getAllShowtimes()
+        : _showtimes[_cinema] ?? [];
 
-    return hiveInit.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) =>
-          Scaffold(body: Center(child: Text('Hive init failed: $e'))),
-      data: (_) {
-        final asyncMovie = ref.watch(movieByIdFutureProvider(widget.movieId));
-
-        return asyncMovie.when(
-          loading: () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
-          error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
-          data: (movie) {
-            if (movie == null) {
-              return const Scaffold(
-                body: Center(child: Text('Movie not found')),
-              );
-            }
-
-            final poster = movie.posterPath;
-
-            final filteredShowtimes = movie.showtimes.where((s) {
-              final dayOk = s.dayIndex == _dayIndex;
-              final cinemaOk = _cinema == 'ALL' ? true : s.cinema == _cinema;
-              final langOk = _language == 'ALL'
-                  ? true
-                  : s.language == _language;
-              return dayOk && cinemaOk && langOk;
-            }).toList();
-
-            final cinemaList = <String>{
-              'ALL',
-              ...movie.showtimes.map((e) => e.cinema),
-            }.toList();
-            final langList = <String>{
-              'ALL',
-              ...movie.showtimes.map((e) => e.language),
-            }.toList();
-
-            return Scaffold(
-              appBar: AppBar(
-                title: Text(
-                  movie.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                centerTitle: true,
-                bottom: TabBar(
-                  controller: _tabController,
-                  tabs: const [
-                    Tab(text: 'Time Slot'),
-                    Tab(text: 'Movie Details'),
-                  ],
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: showtimes.isEmpty
+          ? [const Text('No showtimes available for this cinema')]
+          : [
+              // Using Wrap widget to display showtimes in a row-like structure
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: showtimes.map((showtime) {
+                  return _TimeSlotButton(
+                    time: showtime['time']!,
+                    onTap: () => _navigateToPickSeatsScreen(showtime),
+                  );
+                }).toList(),
               ),
-              body: TabBarView(
-                controller: _tabController,
-                children: [
-                  ListView(
-                    padding: const EdgeInsets.all(12),
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 16 / 8,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            poster,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: Colors.black12,
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.broken_image_outlined,
-                                size: 40,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _DayCard(
-                              title: 'TODAY',
-                              date: 'Today',
-                              isSelected: _dayIndex == 0,
-                              onTap: () => setState(() => _dayIndex = 0),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _DayCard(
-                              title: 'TOMORROW',
-                              date: 'Tomorrow',
-                              isSelected: _dayIndex == 1,
-                              onTap: () => setState(() => _dayIndex = 1),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 14),
-                      const Text(
-                        'Select Cinemas',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: cinemaList.map((c) {
-                          return _ChipButton(
-                            text: c,
-                            isActive: _cinema == c,
-                            onTap: () => setState(() => _cinema = c),
-                          );
-                        }).toList(),
-                      ),
-
-                      const SizedBox(height: 14),
-                      const Text(
-                        'Select Language',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: langList.map((l) {
-                          return _ChipButton(
-                            text: l,
-                            isActive: _language == l,
-                            onTap: () => setState(() => _language = l),
-                          );
-                        }).toList(),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      if (filteredShowtimes.isEmpty)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 18),
-                            child: Text('No showtimes found'),
-                          ),
-                        )
-                      else
-                        ..._groupByCinema(filteredShowtimes).entries.map((e) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${e.key} (${movie.language})',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 10,
-                                  runSpacing: 10,
-                                  children: e.value.map((s) {
-                                    return _TimeButton(
-                                      time: s.formattedTime,
-                                      onTap: () => _goPickSeats(
-                                        movie: movie,
-                                        cinema: s.cinema,
-                                        time: s.formattedTime,
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                    ],
-                  ),
-
-                  // Movie Details tab
-                  ListView(
-                    padding: const EdgeInsets.all(14),
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade700,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            _DetailRow(
-                              icon: Icons.grid_view_rounded,
-                              title: 'GENRE',
-                              value: 'DRAMA',
-                            ),
-                            const SizedBox(height: 10),
-                            _DetailRow(
-                              icon: Icons.access_time_rounded,
-                              title: 'DURATION',
-                              value: '${movie.duration} | ${movie.language}',
-                            ),
-                            const SizedBox(height: 10),
-                            _DetailRow(
-                              icon: Icons.article_outlined,
-                              title: 'SYNOPSIS',
-                              value: movie.description,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+            ],
     );
   }
 
-  Map<String, List<dynamic>> _groupByCinema(List<dynamic> showtimes) {
-    final map = <String, List<dynamic>>{};
-    for (final s in showtimes) {
-      final cinema = (s.cinema as String);
-      map.putIfAbsent(cinema, () => []);
-      map[cinema]!.add(s);
-    }
-    return map;
+  // Get all showtimes for all cinemas
+  List<Map<String, String>> _getAllShowtimes() {
+    List<Map<String, String>> allShowtimes = [];
+    _showtimes.forEach((cinema, times) {
+      allShowtimes.addAll(times);
+    });
+    return allShowtimes;
   }
-}
 
-class _DayCard extends StatelessWidget {
-  final String title;
-  final String date;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _DayCard({
-    required this.title,
-    required this.date,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = isSelected ? Colors.blue.shade700 : Colors.grey.shade300;
-    final fg = isSelected ? Colors.white : Colors.black87;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                date,
-                style: TextStyle(color: fg, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
+  // Navigate to PickSeatsScreen with the selected showtime
+  void _navigateToPickSeatsScreen(Map<String, String> showtime) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PickSeatsScreen(
+          cinema: showtime['cinema']!,
+          time: showtime['time']!,
+          movieTitle: '',
+          movieId: '',
+          dayIndex: _dayIndex,
         ),
       ),
     );
@@ -381,11 +296,11 @@ class _ChipButton extends StatelessWidget {
   }
 }
 
-class _TimeButton extends StatelessWidget {
+class _TimeSlotButton extends StatelessWidget {
   final String time;
   final VoidCallback onTap;
 
-  const _TimeButton({required this.time, required this.onTap});
+  const _TimeSlotButton({required this.time, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

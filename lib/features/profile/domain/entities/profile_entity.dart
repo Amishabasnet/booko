@@ -1,35 +1,31 @@
 class ProfileEntity {
-  final String name;
+  final String fullName;
   final String email;
-  final String phoneNumber;
+  final String phone;
   final DateTime dob;
   final String gender;
-  final String? imagePath;
 
-  const ProfileEntity({
-    required this.name,
+  ProfileEntity({
+    required this.fullName,
     required this.email,
-    required this.phoneNumber,
+    required this.phone,
     required this.dob,
     required this.gender,
-    this.imagePath,
   });
 
   ProfileEntity copyWith({
-    String? name,
+    String? fullName,
     String? email,
-    String? phoneNumber,
+    String? phone,
     DateTime? dob,
     String? gender,
-    String? imagePath,
   }) {
     return ProfileEntity(
-      name: name ?? this.name,
+      fullName: fullName ?? this.fullName,
       email: email ?? this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      phone: phone ?? this.phone,
       dob: dob ?? this.dob,
       gender: gender ?? this.gender,
-      imagePath: imagePath ?? this.imagePath,
     );
   }
 }

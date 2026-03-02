@@ -1,7 +1,7 @@
-import 'package:booko/features/profile/domain/entities/profile_entity.dart';
+import '../entities/profile_entity.dart';
 
 abstract class ProfileRepository {
-  Future<ProfileEntity?> getProfile(); // nullable (first time)
+  Future<ProfileEntity?> getProfile();
   Future<void> saveProfile(ProfileEntity profile);
-  Future<void> clearProfile();
+  Future<void> deleteProfile();
 }

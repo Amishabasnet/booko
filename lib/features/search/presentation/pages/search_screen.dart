@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/search_providers.dart';
+
+import '../../../../core/utils/debounce.dart';
+import '../providers/search_provider.dart';
+import '../widgets/search_list_item.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -9,119 +12,65 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _controller = TextEditingController();
+  final Debouncer _debouncer = Debouncer();
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  bool get wantKeepAlive => true;
+
+  void _clear(SearchNotifier notifier) {
+    _controller.clear();
+    notifier.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    final st = ref.watch(searchProvider);
-    final notifier = ref.read(searchProvider.notifier);
+    super.build(context);
+
+    final notifier = ref.watch(searchProvider);
+
+    final w = MediaQuery.of(context).size.width;
+    final pad = w >= 700 ? 24.0 : 16.0;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Movie, Genres & Language',
-          style: TextStyle(fontSize: 14),
-        ),
-        centerTitle: true,
+        title: const Text('Movie, Genres & Language'),
         actions: [
-          TextButton(
-            onPressed: () {
-              _controller.clear();
-              notifier.clear();
-            },
-            child: const Text('Clear', style: TextStyle(color: Colors.black)),
-          ),
+          if (notifier.query.isNotEmpty)
+            TextButton(
+              onPressed: () => _clear(notifier),
+              child: const Text('Clear'),
+            ),
         ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: EdgeInsets.all(pad),
             child: TextField(
               controller: _controller,
-              onChanged: notifier.setQuery,
-              decoration: InputDecoration(
+              onChanged: (val) {
+                _debouncer.run(() {
+                  ref.read(searchProvider).search(val);
+                });
+              },
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
                 hintText: 'Search movie / language...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
               ),
             ),
           ),
           Expanded(
-            child: st.isLoading
+            child: notifier.loading
                 ? const Center(child: CircularProgressIndicator())
-                : (st.error != null)
-                ? Center(child: Text(st.error!))
-                : ListView.separated(
-                    itemCount: st.results.length,
-                    separatorBuilder: (_, __) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Divider(color: Colors.grey.shade400, height: 20),
-                    ),
-                    itemBuilder: (context, index) {
-                      final movie = st.results[index];
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.asset(
-                                movie.posterPath,
-                                width: 68,
-                                height: 92,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 68,
-                                  height: 92,
-                                  color: Colors.grey.shade300,
-                                  child: const Icon(Icons.broken_image),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    movie.title,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    movie.language,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                : notifier.results.isEmpty
+                ? const Center(child: Text("No results"))
+                : ListView.builder(
+                    itemCount: notifier.results.length,
+                    itemBuilder: (_, i) =>
+                        SearchListItem(movie: notifier.results[i]),
                   ),
           ),
         ],

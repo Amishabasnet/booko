@@ -7,10 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Provider
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
   final hiveService = ref.read(hiveServiceProvider);
-  final UserSessionService = ref.read(UserSessionServiceProvider);
+
+  // ✅ FIX: variable name should not start with Capital letter
+  final userSessionService = ref.read(UserSessionServiceProvider);
+
   return AuthLocalDatasource(
     hiveService: hiveService,
-    userSessionService: UserSessionService,
+    userSessionService: userSessionService,
   );
 });
 
@@ -28,16 +31,18 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
   Future<AuthHiveModel?> login(String email, String password) async {
     try {
       final user = await _hiveService.login(email, password);
-      // save user details to share prefs
+
+      // ✅ Save user details to session (SharedPrefs)
       if (user != null) {
         await _userSessionService.saveUserSession(
-          userId: user.authId!,
+          userId: user.authId ?? '',
           email: user.email,
           name: user.name,
           dob: user.dob,
           gender: user.gender,
           phoneNumber: user.phoneNumber,
-          hiveModel: null,
+          // ✅ store full model if your service supports it
+          hiveModel: user,
         );
       }
       return user;
@@ -49,12 +54,28 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
   @override
   Future<bool> logout() async {
     await _hiveService.logoutUser();
+
+    // ✅ OPTIONAL but recommended: clear session too (only if you have method)
+    // await _userSessionService.clearUserSession();
+
     return true;
   }
 
   @override
   Future<bool> register(AuthHiveModel model) async {
     await _hiveService.registerUser(model);
+
+    // ✅ IMPORTANT: After successful register, also save into session
+    await _userSessionService.saveUserSession(
+      userId: model.authId ?? '',
+      email: model.email,
+      name: model.name,
+      dob: model.dob,
+      gender: model.gender,
+      phoneNumber: model.phoneNumber,
+      hiveModel: model,
+    );
+
     return true;
   }
 

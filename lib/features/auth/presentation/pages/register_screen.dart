@@ -1,5 +1,3 @@
-import 'package:booko/core/utils/snackbar_utils.dart';
-import 'package:booko/core/widgets/gradient_button.dart';
 import 'package:booko/features/auth/presentation/pages/login_screen.dart';
 import 'package:booko/features/auth/presentation/state/auth_state.dart';
 import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
@@ -47,16 +45,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       emailErrorMsg = mobileErrorMsg = passwordErrorMsg = confirmPasswordMsg =
           "";
 
-      String name = nameController.text.trim();
-      String email = emailController.text.trim();
-      String mobile = mobileController.text.trim();
-      String dob = dobController.text.trim();
-      String pass = passwordController.text.trim();
-      String confirmPass = confirmPasswordController.text.trim();
+      final name = nameController.text.trim();
+      final email = emailController.text.trim();
+      final mobile = mobileController.text.trim();
+      final dob = dobController.text.trim();
+      final pass = passwordController.text.trim();
+      final confirmPass = confirmPasswordController.text.trim();
 
-      if (name.isEmpty) {
-        nameError = true;
-      }
+      if (name.isEmpty) nameError = true;
 
       if (!email.contains("@")) {
         emailError = true;
@@ -68,13 +64,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         mobileErrorMsg = "Phone number must be 10 digits.";
       }
 
-      if (dob.isEmpty) {
-        dobError = true;
-      }
+      if (dob.isEmpty) dobError = true;
 
-      if (selectedGender == null) {
-        genderError = true;
-      }
+      if (selectedGender == null) genderError = true;
 
       if (pass.length < 6) {
         passwordError = true;
@@ -85,24 +77,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         confirmPasswordError = true;
         confirmPasswordMsg = "Passwords do not match.";
       }
-
-      if (!nameError &&
-          !emailError &&
-          !mobileError &&
-          !dobError &&
-          !genderError &&
-          !passwordError &&
-          !confirmPasswordError) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
-      }
     });
   }
 
   Future<void> pickDOB() async {
-    DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime(2000),
       firstDate: DateTime(1950),
@@ -112,9 +91,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (pickedDate != null) {
       dobController.text =
           "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-      setState(() {
-        dobError = false;
-      });
+      setState(() => dobError = false);
     }
   }
 
@@ -160,13 +137,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
       if (next.status == AuthStatus.registered) {
-        SnackbarUtils.showSuccess(
-          context,
-          'Registration successful! Please login.',
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful! Please login.'),
+          ),
         );
-        Navigator.of(context).pop();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
       } else if (next.status == AuthStatus.error && next.errorMessage != null) {
-        SnackbarUtils.showError(context, next.errorMessage!);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
       }
     });
 
@@ -297,12 +280,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 icon: const Icon(Icons.keyboard_arrow_down),
                 hint: const Text("Select Gender"),
                 decoration: InputDecoration(
-                  hintText: "Select Gender",
                   border: inputBorder(genderError),
                   enabledBorder: inputBorder(genderError),
                   focusedBorder: inputBorder(genderError),
-                  errorBorder: inputBorder(true),
-                  focusedErrorBorder: inputBorder(true),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 16,
@@ -320,7 +300,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   });
                 },
               ),
-
               if (genderError)
                 const Text(
                   "Please select gender.",
@@ -342,11 +321,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     icon: Icon(
                       passwordVisible ? Icons.visibility : Icons.visibility_off,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        passwordVisible = !passwordVisible;
-                      });
-                    },
+                    onPressed: () =>
+                        setState(() => passwordVisible = !passwordVisible),
                   ),
                   border: inputBorder(passwordError),
                   enabledBorder: inputBorder(passwordError),
@@ -376,11 +352,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ? Icons.visibility
                           : Icons.visibility_off,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        confirmPasswordVisible = !confirmPasswordVisible;
-                      });
-                    },
+                    onPressed: () => setState(
+                      () => confirmPasswordVisible = !confirmPasswordVisible,
+                    ),
                   ),
                   border: inputBorder(confirmPasswordError),
                   enabledBorder: inputBorder(confirmPasswordError),
@@ -394,28 +368,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 30),
 
-              // SizedBox(
-              //   width: double.infinity,
-              //   height: 50,
-              //   child: ElevatedButton(
-              //     style: ElevatedButton.styleFrom(
-              //       backgroundColor: const Color(0xff003366),
-              //       shape: const StadiumBorder(),
-              //     ),
-              //     onPressed: validateForm,
-              //     child: const Text(
-              //       "Sign Up",
-              //       style: TextStyle(color: Colors.white, fontSize: 16),
-              //     ),
-              //   ),
-              // ),
-              GradientButton(
-                text: 'Create Account',
-                onPressed: validateForm,
-                isLoading: authState.status == AuthStatus.loading,
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff003366),
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: authState.status == AuthStatus.loading
+                      ? null
+                      : signUp,
+                  child: authState.status == AuthStatus.loading
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          "Create Account",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                ),
               ),
-              const SizedBox(height: 8),
 
+              const SizedBox(height: 8),
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -425,11 +402,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       style: TextStyle(fontSize: 14, color: Colors.black54),
                     ),
                     TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
@@ -445,10 +417,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),
+              const SizedBox(height: 32),
             ],
           ),
         ),

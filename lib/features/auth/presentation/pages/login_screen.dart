@@ -1,27 +1,24 @@
 import 'package:booko/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:booko/features/auth/presentation/pages/register_screen.dart';
+import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
+import 'package:booko/features/auth/presentation/state/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-/// State Providers
-
 final emailErrorProvider = StateProvider<bool>((ref) => false);
 final passwordErrorProvider = StateProvider<bool>((ref) => false);
-
 final passwordVisibleProvider = StateProvider<bool>((ref) => false);
-
 final emailErrorMsgProvider = StateProvider<String>((ref) => "");
 final passwordErrorMsgProvider = StateProvider<String>((ref) => "");
 
-/// Login Screen
 class LoginScreen extends ConsumerWidget {
   LoginScreen({super.key});
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void validate(BuildContext context, WidgetRef ref) {
+  Future<void> validateAndLogin(BuildContext context, WidgetRef ref) async {
     // reset errors
     ref.read(emailErrorProvider.notifier).state = false;
     ref.read(passwordErrorProvider.notifier).state = false;
@@ -31,20 +28,22 @@ class LoginScreen extends ConsumerWidget {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // demo login check
-    if (email == "amishabasnet@gmail.com" && password == "987456") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-    } else {
+    if (!email.contains("@")) {
       ref.read(emailErrorProvider.notifier).state = true;
-      ref.read(passwordErrorProvider.notifier).state = true;
       ref.read(emailErrorMsgProvider.notifier).state =
-          "Invalid email or password.";
-      ref.read(passwordErrorMsgProvider.notifier).state =
-          "Invalid email or password.";
+          "Please enter a valid email.";
+      return;
     }
+    if (password.isEmpty) {
+      ref.read(passwordErrorProvider.notifier).state = true;
+      ref.read(passwordErrorMsgProvider.notifier).state =
+          "Please enter password.";
+      return;
+    }
+
+    await ref
+        .read(authViewmodelProvider.notifier)
+        .login(email: email, password: password);
   }
 
   @override
@@ -52,6 +51,21 @@ class LoginScreen extends ConsumerWidget {
     final emailError = ref.watch(emailErrorProvider);
     final passwordError = ref.watch(passwordErrorProvider);
     final passwordVisible = ref.watch(passwordVisibleProvider);
+    final authState = ref.watch(authViewmodelProvider);
+
+    ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
+        ref.read(emailErrorProvider.notifier).state = true;
+        ref.read(passwordErrorProvider.notifier).state = true;
+        ref.read(emailErrorMsgProvider.notifier).state = next.errorMessage!;
+        ref.read(passwordErrorMsgProvider.notifier).state = next.errorMessage!;
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -67,7 +81,6 @@ class LoginScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
-
               const Text(
                 "Welcome Back",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -79,7 +92,6 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 30),
 
-              /// Email
               const Text(
                 "Email Address",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -115,7 +127,6 @@ class LoginScreen extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              /// Password
               const Text(
                 "Password",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -160,7 +171,6 @@ class LoginScreen extends ConsumerWidget {
 
               const SizedBox(height: 25),
 
-              /// Sign In Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -169,17 +179,24 @@ class LoginScreen extends ConsumerWidget {
                     shape: const StadiumBorder(),
                     backgroundColor: const Color(0xff003366),
                   ),
-                  onPressed: () => validate(context, ref),
-                  child: const Text(
-                    "Sign In",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                  onPressed: authState.status == AuthStatus.loading
+                      ? null
+                      : () async => validateAndLogin(context, ref),
+                  child: authState.status == AuthStatus.loading
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          "Sign In",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              /// Sign Up
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -189,7 +206,9 @@ class LoginScreen extends ConsumerWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => RegisterScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterScreen(),
+                        ),
                       );
                     },
                     child: const Text(
