@@ -1,7 +1,6 @@
 import 'package:booko/features/movie/domain/repositories/movie_repository.dart';
 import 'package:booko/features/movie/data/datasources/movie_local_datasource.dart';
 import 'package:booko/features/movie/domain/entities/movie.dart';
-import 'package:booko/features/movie/data/models/movie_hive_model.dart';
 
 class MovieRepositoryImpl implements MovieRepository {
   final MovieLocalDataSource ds;

@@ -3,18 +3,22 @@ import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:booko/core/providers/shared_prefs_provider.dart';
 
 // Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return ApiClient(prefs: prefs);
 });
 
 class ApiClient {
   late final Dio _dio;
+  final SharedPreferences prefs;
 
-  ApiClient() {
+  ApiClient({required this.prefs}) {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -28,7 +32,7 @@ class ApiClient {
     );
 
     // Add interceptors
-    _dio.interceptors.add(_AuthInterceptor());
+    _dio.interceptors.add(_AuthInterceptor(prefs));
 
     // Auto retry on network failures
     _dio.interceptors.add(
@@ -36,9 +40,9 @@ class ApiClient {
         dio: _dio,
         retries: 3,
         retryDelays: const [
-          Duration(seconds: 1),
-          Duration(seconds: 2),
-          Duration(seconds: 3),
+          Duration(seconds: 10),
+          Duration(seconds: 20),
+          Duration(seconds: 30),
         ],
         retryEvaluator: (error, attempt) {
           // Retry on connection errors and timeouts, not on 4xx/5xx
@@ -139,8 +143,9 @@ class ApiClient {
 
 // Auth Interceptor to add JWT token to requests
 class _AuthInterceptor extends Interceptor {
-  final _storage = const FlutterSecureStorage();
-  static const String _tokenKey = 'auth_token';
+  final SharedPreferences prefs;
+
+  _AuthInterceptor(this.prefs);
 
   @override
   void onRequest(
@@ -159,7 +164,7 @@ class _AuthInterceptor extends Interceptor {
         options.path == ApiEndpoints.userRegister;
 
     if (!isPublicGet && !isAuthEndpoint) {
-      final token = await _storage.read(key: _tokenKey);
+      final token = prefs.getString('token');
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
       }
@@ -173,7 +178,7 @@ class _AuthInterceptor extends Interceptor {
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401) {
       // Clear token and redirect to login
-      _storage.delete(key: _tokenKey);
+      prefs.remove('token');
       // You can add navigation logic here or use a callback
     }
     handler.next(err);

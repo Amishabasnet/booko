@@ -10,6 +10,8 @@ abstract class IAuthLocalDatasource {
   Future<AuthHiveModel?> getUserById(String authId);
   Future<bool> deleteUser(String authId);
   Future<bool> updatedUser(AuthHiveModel user);
+
+  Future<void> saveUser(AuthApiModel response) async {}
 }
 
 abstract interface class IAuthRemoteDatasource {

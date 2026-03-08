@@ -1,7 +1,14 @@
 import 'package:booko/features/auth/domain/entities/auth_entity.dart';
 import 'package:equatable/equatable.dart';
 
-enum AuthStatus { initial, loading, authenticated, registered, error }
+enum AuthStatus {
+  initial,
+  loading,
+  authenticated,
+  registered,
+  unauthenticated,
+  error,
+}
 
 class AuthState extends Equatable {
   final AuthStatus status;
@@ -21,12 +28,16 @@ class AuthState extends Equatable {
     bool? isLoading,
     String? errorMessage,
     AuthEntity? authEntity,
+    bool clearErrorMessage = false,
+    bool clearAuthEntity = false,
   }) {
     return AuthState(
       status: status ?? this.status,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
-      authEntity: authEntity ?? this.authEntity,
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
+      authEntity: clearAuthEntity ? null : (authEntity ?? this.authEntity),
     );
   }
 

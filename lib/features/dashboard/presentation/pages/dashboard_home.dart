@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-
-class DashboardHome extends StatelessWidget {
-  const DashboardHome({super.key});
-
-  final List<Map<String, String>> nowShowing = const [
 import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
+import 'package:booko/features/dashboard/presentation/widgets/sensor_dashboard.dart';
+
 
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
@@ -52,7 +49,6 @@ class DashboardHome extends StatelessWidget {
     },
   ];
 
-  final List<Map<String, String>> comingSoon = const [
   static const List<Map<String, String>> comingSoon = [
     {
       'title': 'Avengers: Secret Wars',
@@ -80,33 +76,36 @@ class DashboardHome extends StatelessWidget {
     },
   ];
 
-  void _openMovieDetail(BuildContext context, Map<String, String> movie) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MovieDetailScreen(
-          movieId: movie['title']!, // Use movie title or unique id as movieId
-          movie: movie, // Pass entire movie data to MovieDetailScreen
-        ),
-      ),
-    );
-  }
-
-        builder: (_) => MovieDetailScreen(movie: movie, movieId: ''),
-      ),
-    );
-  }
-
-  void _showComingSoonSnack(BuildContext context, String title) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$title is coming soon! Stay tuned.'),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
+  void _openMovieDetail(
+    BuildContext context,
+    Map<String, String> movie, {
+    bool isComingSoon = false,
+  }) {
+    if (isComingSoon) {
+      // Show popup for coming soon movies
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Coming Soon'),
+          content: Text('${movie['title']} will be available soon!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
+    } else {
+      // Navigate to movie detail
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              MovieDetailScreen(movie: movie),
+        ),
+      );
+    }
   }
 
   @override
@@ -133,41 +132,21 @@ class DashboardHome extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            buildMovieGrid(context, nowShowing),
-            buildMovieGrid(context, comingSoon),
-          centerTitle: true,
-          title: const Text(
-            'Booko',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SensorDashboard(),
+                  buildMovieGrid(context, nowShowing, shrinkWrap: true),
+                ],
+              ),
             ),
-          ),
-          backgroundColor: const Color(0xff003366),
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3,
-            tabs: [
-              Tab(text: 'NOW SHOWING'),
-              Tab(text: 'COMING SOON'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildMovieGrid(
-              context,
-              nowShowing,
-              onTap: (movie) => _openMovieDetail(context, movie),
-            ),
-            _buildMovieGrid(
-              context,
-              comingSoon,
-              onTap: (movie) =>
-                  _showComingSoonSnack(context, movie['title'] ?? 'Movie'),
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SensorDashboard(),
+                  buildMovieGrid(context, comingSoon, isComingSoon: true, shrinkWrap: true),
+                ],
+              ),
             ),
           ],
         ),
@@ -177,14 +156,15 @@ class DashboardHome extends StatelessWidget {
 
   Widget buildMovieGrid(
     BuildContext context,
-    List<Map<String, String>> movies,
-  ) {
     List<Map<String, String>> movies, {
-    required void Function(Map<String, String> movie) onTap,
+    bool isComingSoon = false,
+    bool shrinkWrap = false,
   }) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
         itemCount: movies.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -196,8 +176,7 @@ class DashboardHome extends StatelessWidget {
           final movie = movies[index];
 
           return InkWell(
-            onTap: () => _openMovieDetail(context, movie),
-            onTap: () => onTap(movie),
+            onTap: () => _openMovieDetail(context, movie, isComingSoon: isComingSoon),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
@@ -205,7 +184,6 @@ class DashboardHome extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset(
-                      movie['image']!,
                       movie['image'] ?? '',
                       fit: BoxFit.cover,
                       width: double.infinity,
@@ -214,13 +192,11 @@ class DashboardHome extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  movie['title']!,
                   movie['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${movie['language']} | ${movie['duration']}',
                   '${movie['language'] ?? ''} | ${movie['duration'] ?? ''}',
                   style: const TextStyle(fontSize: 12),
                 ),
@@ -232,3 +208,4 @@ class DashboardHome extends StatelessWidget {
     );
   }
 }
+

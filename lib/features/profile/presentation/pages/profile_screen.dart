@@ -1,10 +1,16 @@
+import 'package:booko/features/profile/data/models/ticket_hive_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:booko/core/api/api_endpoints.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../state/profile_controller.dart';
 import '../widgets/profile_field.dart';
 import '../widgets/profile_header_card.dart';
 import 'edit_profile_screen.dart';
+import 'package:booko/features/profile/data/models/profile_hive_model.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -44,11 +50,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       body: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-
-          // ✅ Responsive breakpoints
           final isMobile = width < 600;
           final isTablet = width >= 600 && width < 1024;
-
           final horizontalPadding = isMobile
               ? 16.0
               : isTablet
@@ -77,7 +80,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             builder: (_) => const EditProfileScreen(),
                           ),
                         ).then((_) {
-                          // ✅ reload after returning from edit screen
                           ref.read(profileControllerProvider.notifier).load();
                         });
                       },
@@ -103,7 +105,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       child: TabBarView(
                         controller: _tab,
                         children: [
-                          // ✅ Scrollable for small screens
+                          // My Profile Tab
                           SingleChildScrollView(
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 16),
@@ -162,7 +164,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             ),
                           ),
 
-                          const Center(child: Text('My Tickets (Coming Soon)')),
+                          // My Tickets Tab
+                          const _MyTicketsView(),
                         ],
                       ),
                     ),
@@ -173,6 +176,137 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           );
         },
       ),
+    );
+  }
+}
+
+// ---------------- My Tickets View ----------------
+class _MyTicketsView extends StatefulWidget {
+  const _MyTicketsView();
+
+  @override
+  State<_MyTicketsView> createState() => _MyTicketsViewState();
+}
+
+class _MyTicketsViewState extends State<_MyTicketsView> {
+  List<TicketHiveModel> _tickets = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTickets();
+  }
+
+  Future<void> _loadTickets() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      // Load tickets from Hive
+      final profileBox = Hive.box<ProfileHiveModel>('profileBox');
+      if (profileBox.isNotEmpty) {
+        final profile = profileBox.getAt(0)!;
+        _tickets = List.from(profile.myTickets);
+      }
+
+      // Fetch tickets from API
+      final uri = Uri.parse('${ApiEndpoints.baseUrl}${ApiEndpoints.myTickets}');
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['success'] == true && decoded['data'] != null) {
+          final apiTickets = (decoded['data'] as List<dynamic>)
+              .map((t) => TicketHiveModel.fromJson(t))
+              .toList();
+
+          // Merge Hive tickets + API tickets, avoid duplicates
+          for (var t in apiTickets) {
+            if (!_tickets.any(
+              (x) =>
+                  x.movieId == t.movieId &&
+                  x.dayText == t.dayText &&
+                  x.seats.join(',') == t.seats.join(','),
+            )) {
+              _tickets.add(t);
+            }
+          }
+        }
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Text(_error!, style: const TextStyle(color: Colors.red)),
+      );
+    }
+    if (_tickets.isEmpty) {
+      return const Center(child: Text('No tickets found.'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: _tickets.length,
+      itemBuilder: (context, index) {
+        final t = _tickets[index];
+        final seats = t.seats.join(', ');
+        return Card(
+          elevation: 2,
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            title: Text(
+              t.movieTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text('${t.cinema} - ${t.dayText} at ${t.time}'),
+                const SizedBox(height: 4),
+                Text(
+                  'Seats: $seats',
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            trailing: Text(
+              'NPR ${t.totalPrice}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.indigo,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

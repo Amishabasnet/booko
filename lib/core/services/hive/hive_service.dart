@@ -16,15 +16,10 @@ class AuthHiveService {
   static const String currentUserKey = 'current_user';
 
   /// Initialize Hive and open boxes
-  Future<void> init({bool insertDummy = true}) async {
+  Future<void> init() async {
     await Hive.initFlutter();
-
     _registerAdapters();
     await _openBoxes();
-
-    if (insertDummy) {
-      await insertDummyUsers();
-    }
   }
 
   /// Register Hive adapters
@@ -37,7 +32,6 @@ class AuthHiveService {
   /// Open Hive boxes
   Future<void> _openBoxes() async {
     _authBox ??= await Hive.openBox<AuthHiveModel>(HiveTableConstant.authTable);
-
     _sessionBox ??= await Hive.openBox<String>(sessionBoxName);
   }
 
@@ -61,23 +55,30 @@ class AuthHiveService {
 
   /// Register user
   Future<AuthHiveModel> registerUser(AuthHiveModel user) async {
+    // Save user under email key
     await authBox.put(user.email, user);
-    return user;
+
+    // Optional: double-check the save
+    final savedUser = authBox.get(user.email);
+    if (savedUser == null) {
+      throw Exception('Failed to save user: ${user.email}');
+    }
+
+    return savedUser;
   }
 
   /// Login user
   Future<AuthHiveModel?> login(String email, String password) async {
-    try {
-      final user = authBox.values.firstWhere(
-        (u) => u.email == email && u.password == password,
-      );
+    final user = authBox.get(email);
 
-      // Save session
-      await sessionBox.put(currentUserKey, user.email);
-      return user;
-    } catch (_) {
-      return null;
-    }
+    if (user == null) return null; // user not registered
+
+    if (user.password != password) return null; // wrong password
+
+    // Save session
+    await sessionBox.put(currentUserKey, user.email);
+
+    return user;
   }
 
   /// Logout user (clear session only)
@@ -87,9 +88,9 @@ class AuthHiveService {
 
   /// Get current logged-in user
   AuthHiveModel? getCurrentUser() {
-    final username = sessionBox.get(currentUserKey);
-    if (username == null) return null;
-    return authBox.get(username);
+    final email = sessionBox.get(currentUserKey);
+    if (email == null) return null;
+    return authBox.get(email);
   }
 
   // ==================== USER MANAGEMENT ====================
@@ -116,37 +117,23 @@ class AuthHiveService {
     await authBox.clear();
   }
 
-  /// Insert dummy users (for testing/demo)
-  Future<void> insertDummyUsers() async {
-    if (authBox.isNotEmpty) return;
-
-    final dummyUsers = [
-      AuthHiveModel(
-        name: 'Admin User',
-        email: 'admin@booko.com',
-        phoneNumber: '9874563210',
-        dob: '2002-01-30',
-        gender: 'Male',
-        password: 'admin123',
-      ),
-      AuthHiveModel(
-        name: 'Test User',
-        email: 'test@booko.com',
-        phoneNumber: '9863254170',
-        dob: '2001-06-17',
-        gender: 'Female',
-        password: 'test123',
-      ),
-    ];
-
-    for (var user in dummyUsers) {
-      await authBox.put(user.email, user);
-    }
-  }
-
   /// Close Hive
   Future<void> close() async {
     await _authBox?.close();
     await _sessionBox?.close();
+  }
+
+  /// Save user to Hive
+  Future<void> saveUser(AuthHiveModel hiveModel) async {
+    await authBox.put(hiveModel.email, hiveModel);
+  }
+
+  /// Get user by ID (email in this case)
+  Future<AuthHiveModel?> getUserById(String userId) async {
+    try {
+      return authBox.get(userId);
+    } catch (_) {
+      return null;
+    }
   }
 }

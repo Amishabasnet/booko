@@ -8,7 +8,7 @@ part of 'search_hive_model.dart';
 
 class SearchHiveModelAdapter extends TypeAdapter<SearchHiveModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
   SearchHiveModel read(BinaryReader reader) {

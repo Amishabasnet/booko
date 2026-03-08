@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
 import '../../domain/entities/movie.dart';
+import 'search_api_model.dart';
 
 part 'search_hive_model.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 2)
 class SearchHiveModel extends HiveObject implements Movie {
   @override
   @HiveField(0)
@@ -33,24 +34,25 @@ class SearchHiveModel extends HiveObject implements Movie {
     required this.posterUrl,
   });
 
-  factory SearchHiveModel.fromJson(Map<String, dynamic> json) {
+  /// API → Hive
+  factory SearchHiveModel.fromApiModel(SearchApiModel api) {
     return SearchHiveModel(
-      id: (json['id'] ?? '').toString(),
-      title: (json['title'] ?? '').toString(),
-      language: (json['language'] ?? 'Unknown').toString(),
-      genres: (json['genres'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
-          .toList(),
-      // supports: poster or posterUrl from API
-      posterUrl: (json['poster'] ?? json['posterUrl'] ?? '').toString(),
+      id: api.id,
+      title: api.title,
+      language: api.language,
+      genres: api.genres,
+      posterUrl: api.posterUrl,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'language': language,
-    'genres': genres,
-    'poster': posterUrl,
-  };
+  /// Hive → Entity
+  Movie toEntity() {
+    return SearchHiveModel(
+      id: id,
+      title: title,
+      language: language,
+      genres: genres,
+      posterUrl: posterUrl,
+    );
+  }
 }

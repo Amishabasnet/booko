@@ -1,12 +1,11 @@
 import 'package:booko/features/profile/domain/entities/profile_entity.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:booko/core/services/storage/user_session_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'profile_state.dart';
 
 final profileControllerProvider =
     StateNotifierProvider<ProfileController, ProfileState>((ref) {
-      final session = ref.read(UserSessionServiceProvider);
+      final session = ref.watch(UserSessionServiceProvider);
       return ProfileController(session)..load();
     });
 

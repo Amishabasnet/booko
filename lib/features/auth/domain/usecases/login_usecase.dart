@@ -1,5 +1,5 @@
 import 'package:booko/core/error/failures.dart';
-import 'package:booko/features/auth/data/repositories/auth_repository.dart';
+import 'package:booko/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:booko/features/auth/domain/entities/auth_entity.dart';
 import 'package:booko/features/auth/domain/repositories/auth_repository.dart';
 import 'package:booko/features/auth/domain/usecases/usecase.dart';
@@ -19,7 +19,7 @@ class LoginUsecaseParams extends Equatable {
 
 // Provider for login usecase
 final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
+  final authRepository = ref.watch(authRepositoryProvider);
   return LoginUsecase(authRepository: authRepository);
 });
 

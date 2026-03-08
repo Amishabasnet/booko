@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 abstract interface class INetworkInfo {
@@ -20,7 +21,7 @@ class NetworkInfo implements INetworkInfo {
   Future<bool> get isConnected async {
     // Step 1: check connectivity type
     final connectivityResult = await _connectivity.checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.isEmpty || connectivityResult.contains(ConnectivityResult.none) && connectivityResult.length == 1) {
       return false;
     }
 
@@ -28,10 +29,11 @@ class NetworkInfo implements INetworkInfo {
   }
 
   Future<bool> _hasInternetAccess() async {
+    if (kIsWeb) return true;
     try {
       final result = await InternetAddress.lookup('google.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch (e) {
+    } on SocketException {
       return false;
     }
   }

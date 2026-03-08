@@ -1,4 +1,13 @@
+import 'package:booko/features/movie/data/models/ticket_hive_model.dart';
+import 'package:booko/features/profile/data/models/ticket_hive_model.dart';
 import 'package:flutter/material.dart';
+import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:booko/core/api/api_endpoints.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:booko/features/profile/data/models/profile_hive_model.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
   final String movieTitle;
@@ -10,7 +19,9 @@ class BookingConfirmationScreen extends StatelessWidget {
   final int totalPrice;
   final String eventDate; // Movie date (the date movie is booked for)
 
-  const BookingConfirmationScreen({
+  final ValueNotifier<bool> _isBookingNotifier = ValueNotifier<bool>(false);
+
+  BookingConfirmationScreen({
     super.key,
     required this.movieTitle,
     required this.movieId,
@@ -41,7 +52,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               alignment: Alignment.center,
               child: CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.green.shade100,
+                backgroundColor: Colors.green.shade400,
                 child: const Icon(Icons.check, size: 40, color: Colors.white),
               ),
             ),
@@ -56,17 +67,16 @@ class BookingConfirmationScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 30),
 
-            // Top Information: Time Slot, Audi No., and Seat
+            // Top Information
             _buildTopInformation(),
             const SizedBox(height: 20),
 
-            // Movie, Date, and Cinema
+            // Movie Details
             Text(
               movieTitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -83,13 +93,13 @@ class BookingConfirmationScreen extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              'Movie Date: $eventDate', // Display the movie date (when booked)
+              'Movie Date: $eventDate',
               style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 20),
 
-            // Ticket Details (Number of tickets)
-            _buildTicketDetail('Ticket ${seats.length}', 'NPR $totalPrice'),
+            // Ticket Details
+            _buildTicketDetail('Tickets ${seats.length}', 'NPR $totalPrice'),
             const SizedBox(height: 10),
             _buildTicketDetail(
               'Total Payable',
@@ -99,28 +109,42 @@ class BookingConfirmationScreen extends StatelessWidget {
 
             const Spacer(),
 
-            // Checkout Button at the bottom
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Booking confirmed')),
-                  );
-                  Navigator.popUntil(context, (r) => r.isFirst);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            // Checkout Button
+            ValueListenableBuilder<bool>(
+              valueListenable: _isBookingNotifier,
+              builder: (context, isBooking, _) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: isBooking
+                        ? null
+                        : () => _handleCheckout(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo.shade900,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: isBooking
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'CHECKOUT',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
-                ),
-                child: const Text(
-                  'CHECKOUT',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -128,7 +152,86 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  // Function to build top information (Time Slot, Audi No., Seat)
+  // ---------------- HANDLE CHECKOUT ----------------
+  void _handleCheckout(BuildContext context) async {
+    _isBookingNotifier.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      final uri = Uri.parse(
+        '${ApiEndpoints.baseUrl}${ApiEndpoints.bookTicket}',
+      );
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'movieTitle': movieTitle,
+          'movieId': movieId,
+          'cinema': cinema,
+          'time': time,
+          'date': dayText,
+          'seats': seats,
+          'totalPrice': totalPrice,
+        }),
+      );
+
+      _isBookingNotifier.value = false;
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // ---------------- SAVE TICKET TO PROFILE ----------------
+        final profileBox = Hive.box<ProfileHiveModel>('profileBox');
+        if (profileBox.isNotEmpty) {
+          final profile = profileBox.getAt(0)!; // assuming single user
+          final ticket = TicketModel(
+            movieTitle: movieTitle,
+            movieId: movieId,
+            cinema: cinema,
+            time: time,
+            dayText: dayText,
+            seats: seats,
+            totalPrice: totalPrice,
+            eventDate: eventDate,
+          );
+
+          // Add ticket to existing list
+          profile.myTickets.add(ticket as TicketHiveModel);
+          profile.save();
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Booking confirmed! Ticket added to My Tickets'),
+            ),
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardHome()),
+            (route) => false,
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to book: ${response.body}')),
+          );
+        }
+      }
+    } catch (e) {
+      _isBookingNotifier.value = false;
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error booking: $e')));
+      }
+    }
+  }
+
+  // ---------------- UI HELPERS ----------------
   Widget _buildTopInformation() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,7 +243,6 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  // Function to build individual info card
   Widget _buildInfoCard(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
@@ -179,7 +281,6 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  // Function to create a ticket detail row (Ticket X, Total Payable)
   Widget _buildTicketDetail(String label, String value, {bool isBold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
