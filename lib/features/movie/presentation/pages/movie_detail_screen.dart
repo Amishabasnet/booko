@@ -20,9 +20,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  int _dayIndex = 0; // 0 today, 1 tomorrow
+  final int _dayIndex = 0; // 0 today, 1 tomorrow
   String _cinema = 'ALL';
-  String _language = 'ALL';
+  final String _language = 'ALL';
 
   // Showtimes data structure
   final Map<String, List<Map<String, String>>> _showtimes = {

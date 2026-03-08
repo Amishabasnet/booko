@@ -33,7 +33,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   // ✅ Change these if your backend endpoints differ:
-  static const _profilePath = '/profile';
+  static const _profilePath = '/users/profile';
 
   ProfileEntity _fromJson(Map<String, dynamic> json) {
     // If your API is {data:{...}}, use: final m = json['data'] as Map<String,dynamic>;

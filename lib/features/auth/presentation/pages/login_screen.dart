@@ -1,81 +1,127 @@
-import 'package:booko/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:booko/features/auth/presentation/pages/register_screen.dart';
-import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
 import 'package:booko/features/auth/presentation/state/auth_state.dart';
+import 'package:booko/features/auth/presentation/view_model/auth_viewmodel.dart';
+import 'package:booko/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
-final emailErrorProvider = StateProvider<bool>((ref) => false);
-final passwordErrorProvider = StateProvider<bool>((ref) => false);
-final passwordVisibleProvider = StateProvider<bool>((ref) => false);
-final emailErrorMsgProvider = StateProvider<String>((ref) => "");
-final passwordErrorMsgProvider = StateProvider<String>((ref) => "");
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
 
-class LoginScreen extends ConsumerWidget {
-  LoginScreen({super.key});
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
 
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  Future<void> validateAndLogin(BuildContext context, WidgetRef ref) async {
-    // reset errors
-    ref.read(emailErrorProvider.notifier).state = false;
-    ref.read(passwordErrorProvider.notifier).state = false;
-    ref.read(emailErrorMsgProvider.notifier).state = "";
-    ref.read(passwordErrorMsgProvider.notifier).state = "";
+  bool passwordVisible = false;
+  bool emailError = false;
+  bool passwordError = false;
+  String emailErrorMsg = "";
+  String passwordErrorMsg = "";
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void resetErrors() {
+    emailError = false;
+    passwordError = false;
+    emailErrorMsg = "";
+    passwordErrorMsg = "";
+  }
+
+  Future<void> validateAndLogin() async {
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      resetErrors();
+    });
 
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (!email.contains("@")) {
-      ref.read(emailErrorProvider.notifier).state = true;
-      ref.read(emailErrorMsgProvider.notifier).state =
-          "Please enter a valid email.";
-      return;
+    bool hasError = false;
+
+    if (email.isEmpty) {
+      hasError = true;
+      emailError = true;
+      emailErrorMsg = "Please enter your email.";
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      hasError = true;
+      emailError = true;
+      emailErrorMsg = "Please enter a valid email address.";
     }
+
     if (password.isEmpty) {
-      ref.read(passwordErrorProvider.notifier).state = true;
-      ref.read(passwordErrorMsgProvider.notifier).state =
-          "Please enter password.";
-      return;
+      hasError = true;
+      passwordError = true;
+      passwordErrorMsg = "Please enter your password.";
     }
+
+    setState(() {});
+
+    if (hasError) return;
 
     await ref
         .read(authViewmodelProvider.notifier)
         .login(email: email, password: password);
   }
 
+  InputBorder inputBorder(bool error) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(
+        color: error ? Colors.red : Colors.grey.shade300,
+        width: 1,
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final emailError = ref.watch(emailErrorProvider);
-    final passwordError = ref.watch(passwordErrorProvider);
-    final passwordVisible = ref.watch(passwordVisibleProvider);
+  Widget build(BuildContext context) {
     final authState = ref.watch(authViewmodelProvider);
 
     ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
+      if (!mounted) return;
+
       if (next.status == AuthStatus.authenticated) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
-        ref.read(emailErrorProvider.notifier).state = true;
-        ref.read(passwordErrorProvider.notifier).state = true;
-        ref.read(emailErrorMsgProvider.notifier).state = next.errorMessage!;
-        ref.read(passwordErrorMsgProvider.notifier).state = next.errorMessage!;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        });
+      }
+
+      if (next.status == AuthStatus.error && next.errorMessage != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            emailError = true;
+            passwordError = true;
+            emailErrorMsg = next.errorMessage!;
+            passwordErrorMsg = next.errorMessage!;
+          });
+        });
       }
     });
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               const Text(
                 "Booko",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -99,28 +145,33 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 6),
               TextField(
                 controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                onChanged: (_) {
+                  if (emailError) {
+                    setState(() {
+                      emailError = false;
+                      emailErrorMsg = "";
+                    });
+                  }
+                },
                 decoration: InputDecoration(
                   hintText: "example@gmail.com",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: emailError ? Colors.red : Colors.blue,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: emailError ? Colors.red : Colors.grey.shade300,
-                    ),
+                  border: inputBorder(emailError),
+                  enabledBorder: inputBorder(emailError),
+                  focusedBorder: inputBorder(emailError),
+                  errorBorder: inputBorder(true),
+                  focusedErrorBorder: inputBorder(true),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
                   ),
                 ),
               ),
               if (emailError)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    ref.watch(emailErrorMsgProvider),
+                    emailErrorMsg,
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
@@ -135,58 +186,66 @@ class LoginScreen extends ConsumerWidget {
               TextField(
                 controller: passwordController,
                 obscureText: !passwordVisible,
+                onChanged: (_) {
+                  if (passwordError) {
+                    setState(() {
+                      passwordError = false;
+                      passwordErrorMsg = "";
+                    });
+                  }
+                },
                 decoration: InputDecoration(
                   hintText: "Enter Password",
+                  border: inputBorder(passwordError),
+                  enabledBorder: inputBorder(passwordError),
+                  focusedBorder: inputBorder(passwordError),
+                  errorBorder: inputBorder(true),
+                  focusedErrorBorder: inputBorder(true),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       passwordVisible ? Icons.visibility : Icons.visibility_off,
                     ),
-                    onPressed: () =>
-                        ref.read(passwordVisibleProvider.notifier).state =
-                            !passwordVisible,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: passwordError ? Colors.red : Colors.blue,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: passwordError ? Colors.red : Colors.grey.shade300,
-                    ),
+                    onPressed: () {
+                      setState(() {
+                        passwordVisible = !passwordVisible;
+                      });
+                    },
                   ),
                 ),
               ),
               if (passwordError)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    ref.watch(passwordErrorMsgProvider),
+                    passwordErrorMsg,
                     style: const TextStyle(color: Colors.red, fontSize: 12),
                   ),
                 ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 30),
 
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
+                  onPressed: authState.isLoading ? null : validateAndLogin,
                   style: ElevatedButton.styleFrom(
-                    shape: const StadiumBorder(),
                     backgroundColor: const Color(0xff003366),
+                    shape: const StadiumBorder(),
+                    disabledBackgroundColor: const Color(0xff003366),
                   ),
-                  onPressed: authState.status == AuthStatus.loading
-                      ? null
-                      : () async => validateAndLogin(context, ref),
-                  child: authState.status == AuthStatus.loading
+                  child: authState.isLoading
                       ? const SizedBox(
-                          height: 22,
                           width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text(
                           "Sign In",

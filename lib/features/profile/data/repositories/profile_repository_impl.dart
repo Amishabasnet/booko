@@ -24,7 +24,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     email: e.email,
     phone: e.phone,
     dob: e.dob,
-    gender: e.gender,
+    gender: e.gender, myTickets: [],
   );
 
   /// ✅ Local-first, remote-refresh (best effort)

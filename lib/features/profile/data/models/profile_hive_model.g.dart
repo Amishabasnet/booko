@@ -8,7 +8,7 @@ part of 'profile_hive_model.dart';
 
 class ProfileHiveModelAdapter extends TypeAdapter<ProfileHiveModel> {
   @override
-  final int typeId = 21;
+  final int typeId = 3;
 
   @override
   ProfileHiveModel read(BinaryReader reader) {
@@ -22,13 +22,14 @@ class ProfileHiveModelAdapter extends TypeAdapter<ProfileHiveModel> {
       phone: fields[2] as String,
       dob: fields[3] as DateTime,
       gender: fields[4] as String,
+      myTickets: (fields[5] as List).cast<TicketHiveModel>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, ProfileHiveModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.fullName)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class ProfileHiveModelAdapter extends TypeAdapter<ProfileHiveModel> {
       ..writeByte(3)
       ..write(obj.dob)
       ..writeByte(4)
-      ..write(obj.gender);
+      ..write(obj.gender)
+      ..writeByte(5)
+      ..write(obj.myTickets);
   }
 
   @override

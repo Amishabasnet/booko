@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:booko/core/services/storage/user_session_service.dart';
-import 'package:booko/features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:booko/core/services/storage/user_session_service.dart';
+import 'package:booko/features/onboarding/presentation/pages/onboarding_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -16,29 +17,39 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _route();
+  }
 
-    // Navigate to OnboardingScreen after 4 seconds
-    Timer(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-      // );
-      // check if user already logged in
-      final UserSessionService = ref.read(UserSessionServiceProvider);
-      final isloggedIn = UserSessionService.isUserLoggedIn();
-      if (isloggedIn) {
+  Future<void> _route() async {
+    await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+
+    try {
+      final userSessionService = ref.read(UserSessionServiceProvider);
+      final isLoggedIn = userSessionService.isUserLoggedIn();
+
+      if (isLoggedIn) {
+        // ✅ If logged in -> go to your home/dashboard screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+          // TODO: replace with DashboardScreen()
         );
       } else {
+        // ✅ If not logged in -> go to onboarding/login
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+          // TODO: replace with LoginScreen()
         );
       }
-    });
+    } catch (_) {
+      // ✅ If provider fails for any reason, do not crash app
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+    }
   }
 
   @override
@@ -55,8 +66,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 120,
             ),
             const SizedBox(height: 20),
-
-            const SizedBox(height: 10),
           ],
         ),
       ),

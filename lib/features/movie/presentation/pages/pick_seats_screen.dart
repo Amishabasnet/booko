@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:booko/core/api/api_endpoints.dart';
 import 'booking_confirmation_screen.dart';
 
 class PickSeatsScreen extends StatefulWidget {
@@ -23,7 +26,42 @@ class PickSeatsScreen extends StatefulWidget {
 
 class _PickSeatsScreenState extends State<PickSeatsScreen> {
   final Set<String> _selectedSeats = {};
+  Set<String> _bookedSeats = {};
+  bool _isLoading = true;
   static const int _pricePerSeat = 300;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBookedSeats();
+  }
+
+  Future<void> _fetchBookedSeats() async {
+    try {
+      final dayText = widget.dayIndex == 0 ? 'Today' : 'Tomorrow';
+      final uri = Uri.parse(
+        '${ApiEndpoints.baseUrl}${ApiEndpoints.getBookedSeats}?movieId=${widget.movieId}&cinema=${widget.cinema}&time=${widget.time}&date=$dayText',
+      );
+
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['success'] == true && decoded['data'] != null) {
+          final List<dynamic> seatList = decoded['data'];
+          setState(() {
+            _bookedSeats = seatList.map((e) => e.toString()).toSet();
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching seats: $e');
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   String _seatLabel(int r, int c) {
     final row = String.fromCharCode(65 + r);
@@ -69,54 +107,69 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
           // Center the seat grid
           Expanded(
             child: Center(
-              child: SizedBox(
-                width: 320,
-                child: GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  itemCount: 10 * 10,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 10,
-                    mainAxisSpacing: 6,
-                    crossAxisSpacing: 6,
-                  ),
-                  itemBuilder: (_, i) {
-                    final r = i ~/ 10;
-                    final c = (i % 10) + 1;
-                    final seat = _seatLabel(r, c);
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                      width: 320,
+                      child: GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        itemCount: 10 * 10,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 10,
+                              mainAxisSpacing: 6,
+                              crossAxisSpacing: 6,
+                            ),
+                        itemBuilder: (_, i) {
+                          final r = i ~/ 10;
+                          final c = (i % 10) + 1;
+                          final seat = _seatLabel(r, c);
 
-                    final isSelected = _selectedSeats.contains(seat);
+                          final isBooked = _bookedSeats.contains(seat);
+                          final isSelected = _selectedSeats.contains(seat);
 
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            _selectedSeats.remove(seat);
-                          } else {
-                            _selectedSeats.add(seat);
+                          Color bgColor = Colors.white;
+                          if (isBooked) {
+                            bgColor = Colors.red;
+                          } else if (isSelected) {
+                            bgColor = Colors.orange;
                           }
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(6),
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.red : Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.black26),
-                        ),
-                        child: Text(
-                          seat,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: isSelected ? Colors.white : Colors.black87,
-                          ),
-                        ),
+
+                          return InkWell(
+                            onTap: isBooked
+                                ? null
+                                : () {
+                                    setState(() {
+                                      if (isSelected) {
+                                        _selectedSeats.remove(seat);
+                                      } else {
+                                        _selectedSeats.add(seat);
+                                      }
+                                    });
+                                  },
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: bgColor,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.black26),
+                              ),
+                              child: Text(
+                                seat,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: (isSelected || isBooked)
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
             ),
           ),
 
@@ -182,7 +235,8 @@ class _PickSeatsScreenState extends State<PickSeatsScreen> {
                                   time: widget.time,
                                   dayText: dayText,
                                   seats: _selectedSeats.toList(),
-                                  totalPrice: _totalPrice, eventDate: '',
+                                  totalPrice: _totalPrice,
+                                  eventDate: '',
                                 ),
                               ),
                             );

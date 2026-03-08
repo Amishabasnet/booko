@@ -1,3 +1,4 @@
+import 'package:booko/features/auth/data/models/auth_hive_model.dart';
 import 'package:booko/features/auth/domain/entities/auth_entity.dart';
 
 class AuthApiModel {
@@ -5,7 +6,7 @@ class AuthApiModel {
   final String name;
   final String email;
   final String? phoneNumber;
-  final String? dob;
+  final DateTime? dob; // keep as DateTime
   final String? gender;
   final String? password;
 
@@ -26,21 +27,33 @@ class AuthApiModel {
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
-      'dob': dob,
+      'dob': dob?.toIso8601String(), // safe conversion to string
       'gender': gender,
       'password': password,
     };
   }
 
   // from Json
-  factory AuthApiModel.fromJson(Map<String, dynamic> json) {
+  factory AuthApiModel.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return AuthApiModel(
+        id: null,
+        name: "",
+        email: "",
+        phoneNumber: null,
+        dob: null,
+        gender: "prefer_not_to_say",
+        password: null,
+      );
+    }
+
     return AuthApiModel(
       id: json['id'] as String?,
-      name: json['name'] as String,
-      email: json['email'] as String,
+      name: json['name'] as String? ?? "",
+      email: json['email'] as String? ?? "",
       phoneNumber: json['phoneNumber'] as String?,
-      dob: json['dob'] as String?,
-      gender: json['gender'] as String?,
+      dob: json['dob'] != null ? DateTime.tryParse(json['dob']) : null,
+      gender: (json['gender'] as String?)?.toLowerCase() ?? "prefer_not_to_say",
       password: json['password'] as String?,
     );
   }
@@ -52,9 +65,9 @@ class AuthApiModel {
       name: name,
       email: email,
       phoneNumber: phoneNumber,
-      dob: dob,
+      dob: dob?.toIso8601String(),
       gender: gender,
-      password: password,
+      password: password, token: null,
     );
   }
 
@@ -65,9 +78,22 @@ class AuthApiModel {
       name: entity.name,
       email: entity.email,
       phoneNumber: entity.phoneNumber,
-      dob: entity.dob,
+      dob: entity.dob != null ? DateTime.tryParse(entity.dob!) : null,
       gender: entity.gender,
       password: entity.password,
+    );
+  }
+
+  // from Hive Model
+  static AuthApiModel fromHiveModel(AuthHiveModel model) {
+    return AuthApiModel(
+      id: model.authId,
+      name: model.name,
+      email: model.email,
+      phoneNumber: model.phoneNumber,
+      dob: model.dob != null ? DateTime.tryParse(model.dob!) : null,
+      gender: model.gender,
+      password: model.password,
     );
   }
 

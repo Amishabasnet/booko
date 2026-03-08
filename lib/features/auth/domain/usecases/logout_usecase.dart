@@ -1,12 +1,12 @@
 import 'package:booko/core/error/failures.dart';
-import 'package:booko/features/auth/data/repositories/auth_repository.dart';
+import 'package:booko/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:booko/features/auth/domain/repositories/auth_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provider for logout usecase
 final logoutUsecaseProvider = Provider<LogoutUsecase>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
+  final authRepository = ref.watch(authRepositoryProvider);
   return LogoutUsecase(authRepository: authRepository);
 });
 

@@ -1,23 +1,27 @@
+import 'package:booko/features/profile/data/models/ticket_hive_model.dart';
 import 'package:hive/hive.dart';
 
 part 'profile_hive_model.g.dart';
 
-@HiveType(typeId: 21)
+@HiveType(typeId: 3)
 class ProfileHiveModel extends HiveObject {
   @HiveField(0)
-  final String fullName;
+  String fullName;
 
   @HiveField(1)
-  final String email;
+  String email;
 
   @HiveField(2)
-  final String phone;
+  String phone;
 
   @HiveField(3)
-  final DateTime dob;
+  DateTime dob; // store DateTime directly
 
   @HiveField(4)
-  final String gender;
+  String gender;
+
+  @HiveField(5)
+  List<TicketHiveModel> myTickets;
 
   ProfileHiveModel({
     required this.fullName,
@@ -25,5 +29,6 @@ class ProfileHiveModel extends HiveObject {
     required this.phone,
     required this.dob,
     required this.gender,
+    required this.myTickets,
   });
 }

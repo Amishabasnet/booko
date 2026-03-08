@@ -3,21 +3,23 @@ import 'package:booko/features/auth/domain/usecases/register_usecase.dart';
 import 'package:booko/features/auth/presentation/state/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// provider
+// Provider
 final authViewmodelProvider = NotifierProvider<AuthViewmodel, AuthState>(
-  () => AuthViewmodel(),
+  AuthViewmodel.new,
 );
 
 class AuthViewmodel extends Notifier<AuthState> {
   late final RegisterUsecase _registerUsecase;
   late final LoginUsecase _loginUsecase;
+
   @override
   AuthState build() {
-    _registerUsecase = ref.read(registerUsecaseProvider);
-    _loginUsecase = ref.read(loginUsecaseProvider);
-    return AuthState();
+    _registerUsecase = ref.watch(registerUsecaseProvider);
+    _loginUsecase = ref.watch(loginUsecaseProvider);
+    return const AuthState(status: AuthStatus.initial);
   }
 
+  /// Register user
   Future<void> register({
     required String name,
     required String email,
@@ -27,9 +29,12 @@ class AuthViewmodel extends Notifier<AuthState> {
     required String password,
     required String username,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-    // wait for 2 seconds
-    await Future.delayed(Duration(seconds: 2));
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      clearErrorMessage: true,
+    );
+
     final params = RegisterUsecaseParams(
       name: name,
       email: email,
@@ -39,39 +44,80 @@ class AuthViewmodel extends Notifier<AuthState> {
       password: password,
     );
 
-    final result = await _registerUsecase.call(params);
+    final result = await _registerUsecase(params);
+
     result.fold(
       (failure) {
         state = state.copyWith(
           status: AuthStatus.error,
+          isLoading: false,
           errorMessage: failure.message,
         );
       },
-      (success) {
-        state = state.copyWith(status: AuthStatus.registered);
+      (_) {
+        state = state.copyWith(
+          status: AuthStatus.registered,
+          isLoading: false,
+          clearErrorMessage: true,
+        );
       },
     );
   }
 
-  // Login method
+  /// Login user
   Future<void> login({required String email, required String password}) async {
-    state = state.copyWith(status: AuthStatus.loading);
+    state = state.copyWith(
+      status: AuthStatus.loading,
+      isLoading: true,
+      clearErrorMessage: true,
+    );
+
     final params = LoginUsecaseParams(email: email, password: password);
 
-    final result = await _loginUsecase.call(params);
+    final result = await _loginUsecase(params);
+
     result.fold(
       (failure) {
         state = state.copyWith(
           status: AuthStatus.error,
+          isLoading: false,
           errorMessage: failure.message,
+          clearAuthEntity: true,
         );
       },
       (authEntity) {
         state = state.copyWith(
           status: AuthStatus.authenticated,
+          isLoading: false,
           authEntity: authEntity,
+          clearErrorMessage: true,
         );
       },
+    );
+  }
+
+  /// Logout user
+  void logout() {
+    state = const AuthState(
+      status: AuthStatus.unauthenticated,
+      isLoading: false,
+      errorMessage: null,
+      authEntity: null,
+    );
+  }
+
+  /// Reset only error
+  void resetError() {
+    state = state.copyWith(clearErrorMessage: true);
+  }
+
+  /// Reset whole auth state
+  void resetState() {
+    state = const AuthState(
+      status: AuthStatus.initial,
+      isLoading: false,
+      errorMessage: null,
+      authEntity: null,
     );
   }
 }

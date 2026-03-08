@@ -20,7 +20,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final confirmPasswordController = TextEditingController();
 
   String? selectedGender;
-
   bool passwordVisible = false;
   bool confirmPasswordVisible = false;
 
@@ -36,6 +35,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   String mobileErrorMsg = "";
   String passwordErrorMsg = "";
   String confirmPasswordMsg = "";
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void validateForm() {
     setState(() {
@@ -107,6 +111,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         confirmPasswordError) {
       return;
     }
+    debugPrint("Name: ${nameController.text.trim()}");
+    debugPrint("Email: ${emailController.text.trim()}");
+    debugPrint("Mobile: ${mobileController.text.trim()}");
+    debugPrint("DOB: ${dobController.text.trim()}");
+    debugPrint("Gender: $selectedGender");
+    debugPrint("Password: ${passwordController.text.trim()}");
 
     await ref
         .read(authViewmodelProvider.notifier)
@@ -131,6 +141,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  void clearForm() {
+    nameController.clear();
+    emailController.clear();
+    mobileController.clear();
+    dobController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+    selectedGender = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewmodelProvider);
@@ -142,10 +162,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             content: Text('Registration successful! Please login.'),
           ),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
+        clearForm();
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => LoginScreen()),
+          );
+        }
       } else if (next.status == AuthStatus.error && next.errorMessage != null) {
         ScaffoldMessenger.of(
           context,
@@ -184,6 +207,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(height: 30),
 
+              // Name
               const Text("Name", style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
@@ -202,6 +226,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // Email
               const Text(
                 "Email Address",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -223,6 +248,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // Mobile
               const Text(
                 "Mobile",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -245,6 +271,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // DOB
               const Text(
                 "Date of Birth",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -269,13 +296,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // Gender
               const Text(
                 "Gender",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                initialValue: selectedGender,
+                value: selectedGender,
                 isExpanded: true,
                 icon: const Icon(Icons.keyboard_arrow_down),
                 hint: const Text("Select Gender"),
@@ -307,6 +335,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // Password
               const Text(
                 "Password",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -336,6 +365,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 20),
 
+              // Confirm Password
               const Text(
                 "Confirm Password",
                 style: TextStyle(fontWeight: FontWeight.w600),
@@ -368,6 +398,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               const SizedBox(height: 30),
 
+              // Sign Up Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -403,10 +434,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => LoginScreen()),
-                        );
+                        if (mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
+                          );
+                        }
                       },
                       child: const Text(
                         "Sign In",

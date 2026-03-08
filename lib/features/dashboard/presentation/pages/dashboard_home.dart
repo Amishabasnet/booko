@@ -74,16 +74,36 @@ class DashboardHome extends StatelessWidget {
     },
   ];
 
-  void _openMovieDetail(BuildContext context, Map<String, String> movie) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MovieDetailScreen(
-          movieId: movie['title']!, // Use movie title or unique id as movieId
-          movie: movie, // Pass entire movie data to MovieDetailScreen
+  void _openMovieDetail(
+    BuildContext context,
+    Map<String, String> movie, {
+    bool isComingSoon = false,
+  }) {
+    if (isComingSoon) {
+      // Show popup for coming soon movies
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Coming Soon'),
+          content: Text('${movie['title']} will be available soon!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
         ),
-      ),
-    );
+      );
+    } else {
+      // Navigate to movie detail
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              MovieDetailScreen(movieId: movie['title']!, movie: movie),
+        ),
+      );
+    }
   }
 
   @override
@@ -110,8 +130,8 @@ class DashboardHome extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            buildMovieGrid(context, nowShowing),
-            buildMovieGrid(context, comingSoon),
+            buildMovieGrid(context, nowShowing, isComingSoon: false),
+            buildMovieGrid(context, comingSoon, isComingSoon: true),
           ],
         ),
       ),
@@ -120,8 +140,9 @@ class DashboardHome extends StatelessWidget {
 
   Widget buildMovieGrid(
     BuildContext context,
-    List<Map<String, String>> movies,
-  ) {
+    List<Map<String, String>> movies, {
+    bool isComingSoon = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
@@ -136,7 +157,8 @@ class DashboardHome extends StatelessWidget {
           final movie = movies[index];
 
           return InkWell(
-            onTap: () => _openMovieDetail(context, movie),
+            onTap: () =>
+                _openMovieDetail(context, movie, isComingSoon: isComingSoon),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [

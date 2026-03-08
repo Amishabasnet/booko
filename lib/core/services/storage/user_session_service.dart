@@ -1,21 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// shared prefs provider
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError("Shared Preferences are initialized in main.dart");
-});
+import '../../providers/shared_prefs_provider.dart';
 
-// provider
 final UserSessionServiceProvider = Provider<UserSessionService>((ref) {
-  return UserSessionService(prefs: ref.read(sharedPreferencesProvider));
+  final prefs = ref.watch(sharedPreferencesProvider); // reads SAME provider
+  return UserSessionService(prefs: prefs);
 });
 
 class UserSessionService {
-  late final SharedPreferences _prefs;
+  final SharedPreferences _prefs;
 
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
-  // keys for storing data
+
   static const String _keyIsLoggedIn = 'is_logged_in';
   static const String _keyUserId = 'user_id';
   static const String _keyUserEmail = 'user_email';
@@ -24,7 +21,6 @@ class UserSessionService {
   static const String _keyUserDOB = 'user_DOB';
   static const String _keyUserGender = 'user_gender';
 
-  // store user session data
   Future<void> saveUserSession({
     required String userId,
     required String? email,
@@ -32,65 +28,68 @@ class UserSessionService {
     required String? dob,
     required String? gender,
     required String? phoneNumber,
-    required hiveModel,
+    required dynamic hiveModel,
   }) async {
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
-    await _prefs.setString(_keyUserEmail, email!);
     await _prefs.setString(_keyUserName, name);
-    await _prefs.setString(_keyUserDOB, dob!);
-    await _prefs.setString(_keyUserGender, gender!);
+
+    if (email != null) {
+      await _prefs.setString(_keyUserEmail, email);
+    } else {
+      await _prefs.remove(_keyUserEmail);
+    }
+
+    if (dob != null) {
+      await _prefs.setString(_keyUserDOB, dob);
+    } else {
+      await _prefs.remove(_keyUserDOB);
+    }
+
+    if (gender != null) {
+      await _prefs.setString(_keyUserGender, gender);
+    } else {
+      await _prefs.remove(_keyUserGender);
+    }
+
     if (phoneNumber != null) {
       await _prefs.setString(_keyUserPhoneNumber, phoneNumber);
+    } else {
+      await _prefs.remove(_keyUserPhoneNumber);
     }
   }
 
-  // clear user session data
   Future<void> clearUserSession() async {
-    await _prefs.remove(_keyIsLoggedIn);
+    await _prefs.setBool(_keyIsLoggedIn, false);
     await _prefs.remove(_keyUserId);
     await _prefs.remove(_keyUserEmail);
     await _prefs.remove(_keyUserName);
     await _prefs.remove(_keyUserPhoneNumber);
     await _prefs.remove(_keyUserDOB);
     await _prefs.remove(_keyUserGender);
+    await _prefs.remove('token');
   }
 
-  bool isUserLoggedIn() {
-    return _prefs.getBool(_keyIsLoggedIn) ?? false;
+  Future<void> saveToken(String token) async {
+    await _prefs.setString('token', token);
   }
 
-  String? getUserId() {
-    return _prefs.getString(_keyUserId);
-  }
+  String? getToken() => _prefs.getString('token');
 
-  String? getUserEmail() {
-    return _prefs.getString(_keyUserEmail);
-  }
+  bool isUserLoggedIn() => _prefs.getBool(_keyIsLoggedIn) ?? false;
 
-  String? getUserFullName() {
-    return _prefs.getString(_keyUserName);
-  }
+  String? getUserId() => _prefs.getString(_keyUserId);
+  String? getUserEmail() => _prefs.getString(_keyUserEmail);
+  String? getUserFullName() => _prefs.getString(_keyUserName);
+  String? getUserPhoneNumber() => _prefs.getString(_keyUserPhoneNumber);
+  String? getUserDOB() => _prefs.getString(_keyUserDOB);
+  String? getUserGender() => _prefs.getString(_keyUserGender);
 
-  String? getUserPhoneNumber() {
-    return _prefs.getString(_keyUserPhoneNumber);
-  }
+  Future<String?> getName() async => getUserFullName();
+  Future<String?> getEmail() async => getUserEmail();
+  Future<String?> getPhoneNumber() async => getUserPhoneNumber();
+  Future<String?> getDob() async => getUserDOB();
+  Future<String?> getGender() async => getUserGender();
 
-  String? getUserDOB() {
-    return _prefs.getString(_keyUserDOB);
-  }
-
-  String? getUserGender() {
-    return _prefs.getString(_keyUserGender);
-  }
-
-  Future<dynamic> getName() async {}
-
-  Future<dynamic> getEmail() async {}
-
-  Future<dynamic> getPhoneNumber() async {}
-
-  Future<dynamic> getDob() async {}
-
-  Future<dynamic> getGender() async {}
+  Future<dynamic> getUserSession() async {}
 }

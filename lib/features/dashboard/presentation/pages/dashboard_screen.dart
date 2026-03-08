@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:booko/features/dashboard/presentation/pages/dashboard_home.dart';
-import 'package:booko/features/dashboard/presentation/pages/offers_screen.dart';
+import 'package:booko/features/offers/presentation/offers_screen.dart';
 import 'package:booko/features/profile/presentation/pages/profile_screen.dart';
 import 'package:booko/features/search/presentation/pages/search_screen.dart'
     as search_feature;
@@ -33,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     ),
     _TabItem(
-      screen: const OffersScreen(),
+      screen: const OfferScreen(),
       item: const BottomNavigationBarItem(
         icon: Icon(Icons.local_offer),
         label: 'Offers',

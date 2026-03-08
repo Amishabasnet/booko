@@ -1,15 +1,14 @@
 import 'package:booko/core/services/hive/hive_service.dart';
 import 'package:booko/core/services/storage/user_session_service.dart';
 import 'package:booko/features/auth/data/datasources/auth_datasource.dart';
+import 'package:booko/features/auth/data/models/auth_api_model.dart';
 import 'package:booko/features/auth/data/models/auth_hive_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Provider
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
-  final hiveService = ref.read(hiveServiceProvider);
-
-  // ✅ FIX: variable name should not start with Capital letter
-  final userSessionService = ref.read(UserSessionServiceProvider);
+  final hiveService = ref.watch(hiveServiceProvider);
+  final userSessionService = ref.watch(UserSessionServiceProvider);
 
   return AuthLocalDatasource(
     hiveService: hiveService,
@@ -29,83 +28,90 @@ class AuthLocalDatasource implements IAuthLocalDatasource {
 
   @override
   Future<AuthHiveModel?> login(String email, String password) async {
-    try {
-      final user = await _hiveService.login(email, password);
-
-      // ✅ Save user details to session (SharedPrefs)
-      if (user != null) {
-        await _userSessionService.saveUserSession(
-          userId: user.authId ?? '',
-          email: user.email,
-          name: user.name,
-          dob: user.dob,
-          gender: user.gender,
-          phoneNumber: user.phoneNumber,
-          // ✅ store full model if your service supports it
-          hiveModel: user,
-        );
-      }
-      return user;
-    } catch (e) {
-      return null;
+    final user = await _hiveService.login(email, password);
+    if (user != null) {
+      await _userSessionService.saveUserSession(
+        userId: user.authId ?? '',
+        email: user.email,
+        name: user.name,
+        dob: user.dob,
+        gender: user.gender,
+        phoneNumber: user.phoneNumber,
+        hiveModel: user,
+      );
     }
+    return user;
   }
 
   @override
   Future<bool> logout() async {
     await _hiveService.logoutUser();
-
-    // ✅ OPTIONAL but recommended: clear session too (only if you have method)
-    // await _userSessionService.clearUserSession();
-
+    await _userSessionService.clearUserSession();
     return true;
   }
 
   @override
   Future<bool> register(AuthHiveModel model) async {
     await _hiveService.registerUser(model);
-
-    // ✅ IMPORTANT: After successful register, also save into session
-    await _userSessionService.saveUserSession(
-      userId: model.authId ?? '',
-      email: model.email,
-      name: model.name,
-      dob: model.dob,
-      gender: model.gender,
-      phoneNumber: model.phoneNumber,
-      hiveModel: model,
-    );
-
+    await saveUser(AuthApiModel.fromHiveModel(model));
     return true;
   }
 
   @override
-  Future<bool> deleteUser(String authId) {
-    // TODO: implement deleteUser
-    throw UnimplementedError();
+  Future<void> saveUser(AuthApiModel response) async {
+    final hiveModel = AuthHiveModel(
+      authId: response.id,
+      name: response.name,
+      email: response.email,
+      phoneNumber: response.phoneNumber,
+      dob: response.dob?.toIso8601String(),
+      gender: response.gender,
+      password: response.password,
+    );
+
+    await _hiveService.saveUser(hiveModel);
+
+    await _userSessionService.saveUserSession(
+      userId: hiveModel.authId ?? '',
+      email: hiveModel.email,
+      name: hiveModel.name,
+      dob: hiveModel.dob,
+      gender: hiveModel.gender,
+      phoneNumber: hiveModel.phoneNumber,
+      hiveModel: hiveModel,
+    );
   }
 
   @override
-  Future<AuthHiveModel?> getCurrentUser() {
-    // TODO: implement getCurrentUser
-    throw UnimplementedError();
+  Future<AuthHiveModel?> getCurrentUser() async {
+    final session = await _userSessionService.getUserSession();
+    if (session == null) return null;
+    return await _hiveService.getUserById(session.userId);
   }
 
   @override
-  Future<AuthHiveModel?> getUserById(String authId) {
-    // TODO: implement getUserById
-    throw UnimplementedError();
+  Future<AuthHiveModel?> getUserById(String authId) async {
+    return await _hiveService.getUserById(authId);
   }
 
   @override
-  Future<AuthHiveModel?> updateUser(AuthHiveModel model) {
-    // TODO: implement updateUser
-    throw UnimplementedError();
+  Future<AuthHiveModel?> updateUser(AuthHiveModel model) async {
+    await _hiveService.updateUser(model);
+    await saveUser(AuthApiModel.fromHiveModel(model));
+    return model;
   }
 
   @override
-  Future<bool> updatedUser(AuthHiveModel user) {
-    // TODO: implement updatedUser
-    throw UnimplementedError();
+  Future<bool> updatedUser(AuthHiveModel user) async {
+    await _hiveService.updateUser(user);
+    await saveUser(AuthApiModel.fromHiveModel(user));
+    return true;
+  }
+
+  @override
+  Future<bool> deleteUser(String authId) async {
+    await _hiveService.deleteUser(authId);
+    await _userSessionService.clearUserSession();
+    return true;
   }
 }
