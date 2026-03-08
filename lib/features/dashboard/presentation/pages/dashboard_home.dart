@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-
-class DashboardHome extends StatelessWidget {
-  const DashboardHome({super.key});
-
-  final List<Map<String, String>> nowShowing = const [
 import 'package:booko/features/movie/presentation/pages/movie_detail_screen.dart';
+import 'package:booko/features/dashboard/presentation/widgets/sensor_dashboard.dart';
+
 
 class DashboardHome extends StatelessWidget {
   const DashboardHome({super.key});
@@ -52,7 +49,6 @@ class DashboardHome extends StatelessWidget {
     },
   ];
 
-  final List<Map<String, String>> comingSoon = const [
   static const List<Map<String, String>> comingSoon = [
     {
       'title': 'Avengers: Secret Wars',
@@ -106,10 +102,10 @@ class DashboardHome extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (_) =>
-              MovieDetailScreen(movieId: movie['title']!, movie: movie),
+              MovieDetailScreen(movie: movie),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -136,8 +132,22 @@ class DashboardHome extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            buildMovieGrid(context, nowShowing),
-            buildMovieGrid(context, comingSoon),
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SensorDashboard(),
+                  buildMovieGrid(context, nowShowing, shrinkWrap: true),
+                ],
+              ),
+            ),
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SensorDashboard(),
+                  buildMovieGrid(context, comingSoon, isComingSoon: true, shrinkWrap: true),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -146,11 +156,15 @@ class DashboardHome extends StatelessWidget {
 
   Widget buildMovieGrid(
     BuildContext context,
-    List<Map<String, String>> movies,
-  ) {
+    List<Map<String, String>> movies, {
+    bool isComingSoon = false,
+    bool shrinkWrap = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GridView.builder(
+        shrinkWrap: shrinkWrap,
+        physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
         itemCount: movies.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -162,7 +176,7 @@ class DashboardHome extends StatelessWidget {
           final movie = movies[index];
 
           return InkWell(
-            onTap: () => _openMovieDetail(context, movie),
+            onTap: () => _openMovieDetail(context, movie, isComingSoon: isComingSoon),
             borderRadius: BorderRadius.circular(12),
             child: Column(
               children: [
@@ -170,7 +184,6 @@ class DashboardHome extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.asset(
-                      movie['image']!,
                       movie['image'] ?? '',
                       fit: BoxFit.cover,
                       width: double.infinity,
@@ -179,13 +192,11 @@ class DashboardHome extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  movie['title']!,
                   movie['title'] ?? '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${movie['language']} | ${movie['duration']}',
                   '${movie['language'] ?? ''} | ${movie['duration'] ?? ''}',
                   style: const TextStyle(fontSize: 12),
                 ),
@@ -197,3 +208,4 @@ class DashboardHome extends StatelessWidget {
     );
   }
 }
+
